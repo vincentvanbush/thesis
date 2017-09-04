@@ -1,0 +1,59 @@
+\documentclass[11pt,a4paper,polish,thesis]{dcsbook}
+\usepackage[utf8]{inputenc}
+\usepackage[polish]{babel}
+%\usepackage[T1]{fontenc}
+\usepackage{import}
+\usepackage{tabularx}
+\usepackage{subfig}
+\usepackage{listings}
+\usepackage{float}
+\usepackage{marginnote}
+\usepackage{multirow}
+\usepackage{ltablex}
+
+\usepackage{graphicx}
+\graphicspath{ {images/} }
+
+% nie dzielić!
+% \hyphenation{Qwer Tyui}
+\sloppy
+
+\setcounter{secnumdepth}{4}
+\setcounter{tocdepth}{2}
+\begin{document}
+\author{Michał Buszkiewicz, Bartosz Kostaniak}
+\title{Wielowersyjny model spójności replik dla systemu gromadzenia danych w modelu klucz-wartość}
+\supervisor{dr inż.~Dariusz Wawrzyniak}
+\date{Poznań, 2017}
+\maketitle
+\frontmatter
+\tableofcontents{}
+\mainmatter
+
+% 1 Wprowadzenie
+\import{chapters/}{01-intro.tex}
+
+% 2 Problematyka replikacji danych
+\import{chapters/}{02-replication.tex}
+
+% 3 Przegląd istniejących rozwiązań
+\import{chapters/}{03-existingsolutions.tex}
+
+% 4 Opis proponowanego systemu
+\import{chapters/}{04-systemdescription.tex}
+
+% 5 Implementacja
+\import{chapters/}{05-implementation.tex}
+
+% 6 Testy wydajnościowe
+% ===== poszły do 5 ======
+% \import{chapters/}{06-perftests.tex}
+% Na sieci lokalnej i rozległej, np. porównanie wydajności dla poszczególnych spójności. Być może warto byłoby użyć jakiegoś bardziej izolowanego środowiska (DW wspomniał o jakimś HPC gdzie można byłoby postawić to bez wirtualizacji), ale zostaje problem symulowania opóźnień sieci rozległych.
+
+% 6 Podsumowanie i wnioski
+\import{chapters/}{06-summary.tex}
+
+\backmatter
+\import{chapters/}{bibliography.tex}
+
+\end{document}

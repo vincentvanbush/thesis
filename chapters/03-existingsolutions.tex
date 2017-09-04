@@ -1,0 +1,149 @@
+\chapter{Przegląd istniejących rozwiązań} \label{chapter:existingsolutions}
+
+Bazy danych określane zbiorczym terminem NoSQL tworzą bardzo szerokie spektrum rozwiązań o zróżnicowanych paradygmatach przechowywania danych, których cechą wspólną jest odejście od składowania danych w modelu typowym dla relacyjnych baz danych (RDBMS --- \textit{Relational Database Management Systems}). Określenie NoSQL bywa tłumaczone jako \textit{no SQL} (co wyraża oderwanie od wyszukiwania danych przy pomocy związanego z RDBMS języka zapytań \textit{Structured Query Language}) lub \textit{not only SQL} (podkreśla fakt udostępniania przez część systemów języków zapytań zbliżonych do SQL).
+
+\section{Własności systemów baz danych}
+
+Podczas gdy podstawowym wymaganiem stawianym systemom opartym na modelu relacyjnym typowo jest spełnienie własności ACID (\textit{Atomicity, Consistency, Isolation, Durability} - atomowość, spójność, izolacja i trwałość), nierelacyjne bazy danych bazują na innych założeniach, porzucając własności ACID w celu uzyskania wyższej wydajności i --- przede wszystkim --- skalowalności, która była wskazywana jako jeden z głównych problemów w przypadku zastosowania systemów RDBMS.
+
+W rozwiązaniach NoSQL często dąży się do zachowania własności BASE (\textit{Basically Available, Soft-state, Eventual consistency}) i klasyfikuje się systemy przy użyciu kryteriów opisywanych przez twierdzenie CAP mówiące o kompromisie pomiędzy dostępnością systemu a spójnością danych.
+
+\subsection{BASE}
+
+Akronim BASE został utworzony od następujących określeń cech systemów baz danych:
+\begin{itemize}
+    \item \textit{\textbf{B}asically \textbf{a}vailable} --- podstawowa dostępność systemu odpowiadająca kryterium dostępności w twierdzeniu CAP (zob. sekcja \ref{captheorem}),
+    \item \textit{\textbf{S}oft state} --- zgoda na przejściowe występowanie w systemie stanów niespójnych,
+    \item \textit{\textbf{E}ventual consistency} --- gwarancja przejścia systemu w stan spójny w skończonym czasie.
+\end{itemize}
+W systemach cechujących się własnością BASE następuje według Erica Brewera fundamentalny kompromis --- ,,porzucenie właściwości C oraz I [spójność i izolacja w ACID] na rzecz dostępności, łagodności degradacji systemu w warunkach awaryjnych oraz wydajności''. Systemy o własnościach BASE godzą się z osłabieniem wymagań spójności danych, często tolerując odczyty nieświeżych kopii, skupiając się zamiast tego na wysokiej dostępności. Semantyka transakcyjna jest uproszczona lub niedostępna, operacje są wykonywane na zasadzie \textit{best effort}, dając często przybliżone odpowiedzi. Brak sztywnego schematu bazy danych charakterystycznego dla RDBMS pozwala na łatwiejszą ewolucję kształtu składowanych danych.
+
+% według Erica Brewera \cite{bre00} ACID
+
+\subsection{Twierdzenie CAP} \label{captheorem}
+
+Sformułowane przez Brewera twierdzenie CAP (od ang. \textit{\textbf{C}onsistency, \textbf{A}vailability, Tolerance to Network \textbf{P}artitions} - spójność, dostępność, tolerancja na podziały sieci) mówi o tym, że dowolny system współdzielenia danych może posiadać jedynie dwie spośród tych trzech własności. Innymi słowy:
+\begin{itemize}
+    % [BK] "i jednocześnie wydajności" - nie powinno być "spójności"?
+    % [MB] ok
+    \item System o wysokiej dostępności i jednocześnie spójności (np. bazy danych na pojedynczym wężle, sieciowe systemy plików xFS) nie będzie odporna na podziały sieci.
+    \item System o wysokiej dostępności i odporności na podziały sieci (np. DNS, internetowe systemy cache) będą cechowały się słabszą spójnością. W takich systemach ciągłość ich funkcjonowania jest istotniejsza od tego, by odczytywane dane były aktualne.
+    \item System o silnej spójności i odporności na podziały sieci (np. protokoły oparte na decyzjach większościowych) będą cechowały się słabszą dostępnością --- systemy te odpowiedzą komunikatem o błędzie w sytuacji, gdy zwrócenie aktualnej wartości danych nie będzie możliwe ze względu na awarie sieci.
+\end{itemize}
+Systemy w myśl tego twierdzenia często klasyfikowane są jako CP, AP lub CA w zależności od tego, jaką posiadają kombinację cech zawartych w twierdzeniu.
+
+\subsubsection*{Rozszerzone twierdzenie PACELC}
+
+Twierdzenie PACELC (\textit{Partitions: Availability or Consistency, Else: Latency or Consistency}) rozszerza twierdzenie CAP o kompromis, na jaki musi postawić system w sytuacji braku partycji sieci, pomiędzy poziomem spójności a opóźnieniami w dostępie do danych. Wymaganie wysokiej dostępności systemu zakłada konieczność istnienia mechanizmów replikacji danych, w których wraz ze wzrostem poziomu spójności pojawiają się większe opóźnienia wynikające z potrzeby koordynacji replik.
+
+\section{Klasyfikacja}
+
+Istnieje wiele taksonomii służących do klasyfikacji baz danych NoSQL, opartych o kryteria takie jak:
+\begin{itemize}
+    \item model danych --- najczęściej stosowana klasyfikacja uwzględniająca podstawową strukturę zapisywanych danych abstrahując od ich fizycznej postaci; głowne wyróżniane modele to: klucz-wartość, dokumentowy, obiektowy, kolumnowy, grafowy,
+    \item fizyczna struktura składowanych danych --- zarówno w odniesieniu do miejsca składowania, tj. pamięć ulotna lub trwała, jak i do ich wewnętrznej organizacji --- tablice haszowe, B-drzewa, listy powiązane itp.,
+    \item możliwości skalowania --- np. dodawanie maszyn w trakcie działania systemu lub obsługa wielu centrów danych \cite{ell09a}
+    \item docelowo spełniane potrzeby --- nacisk na bogactwo funkcjonalności i wygodę programisty (kosztem skalowalności i prostoty), wysoki potencjał skalowalności (kosztem większej odpowiedzialności programisty), prostotę składowania dowolnych danych (z mniejszymi wymaganiami co do funkcjonalności i skalowalności) lub optymalizację dla konkretnego zastosowania \cite{ham09},
+    \item cechy w odniesieniu do twierdzenia CAP lub PACELC --- kompromis, na który stawia baza danych w sytuacji podziału sieci (pomiędzy dostępnością a spójnościa) i jego braku (pomiędzy spójnością a opóźnieniami).
+\end{itemize}
+
+
+\section{Skalowanie}
+
+Systemy baz danych typu NoSQL, realizując postulat zapewnienia wyższego stopnia skalowalności, często udostępniają mechanizmy do replikacji (zwielokrotniania danych na wielu serwerach) oraz shardingu (z ang. \textit{shard} - odłamek; podział danych na możliwie rozłączne partycje przechowywane na różnych serwerach).
+
+Podejścia poszczególnych systemów do tego aspektu różnią się zarówno metodami replikacji i shardingu (o ile jest on zaimplementowany), jak i stopniem elastyczności działającego systemu, np. w odniesieniu do możliwości rozszerzania uruchomionego systemu o nowe maszyny bez zatrzymania \cite{ell09a}.
+
+\section{Przykładowe systemy}
+
+Jako punkt wyjścia do sedna pracy --- próby skonstruowania specyfikacji i prototypu implementacji bazy danych typu klucz-wartość z replikacją i możliwością sterowania wymaganiami dotyczącymi spójności danych --- przedstawione zostaną skrótowo wybrane systemy o podobnej charakterystyce, ze szczególnym uwzględnieniem wspomnianych wyżej dwóch cech, na podstawie deklarowanych przez twórców cech.
+
+\subsection{Redis}
+
+Redis jest licencjonowaną na zasadach BSD, przechowywaną w pamięci RAM (z odbywającym się w tle zrzucaniem do pamięci trwałej) bazą struktur danych, takich jak m.in. łańcuchy znaków, tablice asocjacyjne, listy, zbiory, mapy bitowe, której można używać zarówno jako bazę danych, jak też jako pamięć podręczną lub zarządcę komunikatów w paradygmacie \textit{publish-subscribe}. Standardowa funkcjonalność obejmuje m.in. replikację, rozszerzalność skryptami LUA, obcinanie wartości strategią LRU, transakcje i różne strategie zrzucania danych na dysk \cite{redis}.
+
+Podstawową funkcjonalność replikacji rozszerza o dodatkowe mechanizmy (w tym sharding) moduł Redis Cluster, w odniesieniu do którego autorzy deklarują wysoką wydajność i skalowalność do 1000 węzłów, ,,akceptowalny'' stopień bezpieczeństwa zapisów i odporność na podziały sieci pod określonymi warunkami \cite{rediscluster}.
+
+\subsubsection*{Replikacja \textit{master-slave}} \label{redisrepl}
+
+Redis stosuje schemat replikacji \textit{master-slave}, w którym repliki \textit{master} przesyłają do replik \textit{slave} aktualizacje poprzez przesłanie ciągu operacji, których wykonanie odtwarza efekt, który zaszedł na zbiorze danych repliki \textit{master} (jest to zatem mechanizm replikacji aktywnej).  W sytuacji braku połączenia pomiędzy repliką \textit{master} i \textit{slave} replika \textit{slave} ponawia próbę połączenia i usiłuje dokonać częściowej resynchronizacji --- pobrania części ciągu operacji, który został zagubiony w czasie, gdy połączenie nie funkcjonowało. W razie niepowodzenia częściowej resynchronizacji odbywa się bardziej skomplikowany proces pełnego odwzorowywania stanu repliki \textit{master} i przesłania go wraz z ciągiem operacji do repliki \textit{slave} \cite{redisrepl}.
+
+Replikacja odbywa się typowo z asynchronicznymi potwierdzeniami od \textit{slave} do \textit{master} o ilości przetworzonych danych, w sposób nieblokujący po stronie węzła \textit{master} i w dużej mierze po stronie \textit{slave}; węzeł \textit{master} może posiadać wiele węzłów \textit{slave}, które również mogą posiadać węzły będące w stosunku do nich węzłami \textit{slave}.
+
+Identyfikatorem każdej historii zbioru danych niezmiennym w ciągu jej cyklu życia jest posiadany przez każdy węzeł \textit{master} pseudolosowy identyfikator \textit{replication ID}. Wraz z utrzymywanym jednocześnie licznikiem przesunięcia (\textit{offset}), inkrementowanym z każdym przesłanym bajtem ciągu operacji do replik podrzędnych (nawet, jeśli żadna nie jest podłączona), para \textit{<replication ID, offset>} jednoznacznie identyfikuje wersję zbioru danych. Replika \textit{slave}, podłączając się do węzła \textit{master} przesyła mu komunikat z dotychczasowo pamiętanym przez siebie (być może żadnym) \textit{replication ID} i \textit{offset}. Replika \textit{master} odpowiada przyrostowym ciągiem operacji bazującym na różnicy własnego i otrzymanego przesunięcia \textit{offset}, jeżeli zna historię identyfikowaną otrzymanym \textit{replication ID}; w przeciwnym razie następuje proces pełnej synchronizacji: proces \textit{master} produkuje migawkę swego aktualnego stanu, jednocześnie buforując wszystkie nowe operacje zapisu odbierane od klientów, a następnie najpierw przesyła migawkę do węzła podrzędnego (który ładuje ją do swojej pamięci), po czym zaś wysyła do \textit{slave} zbuforowane w tym czasie operacje.
+
+Operacje zapisu wykonywane są co do zasady wyłącznie na replice \textit{master}; repliki \textit{slave} domyślnie pracują w trybie tylko do odczytu --- możliwe jest jego wyłączenie, jeżeli godzimy się na możliwość utraty zapisów w sytuacji resynchronizacji z węzłem \textit{master} lub restartu węzła \textit{slave}. W najnowszych (od 4.0) wersjach bazy Redis zapisy te nie są też propagowane do replik \textit{slave} niższego poziomu.
+
+Operacje odczytu mogą być wykonywane na replice \textit{master} (z gwarancją odczytu aktualnych danych) lub \textit{slave} (jeżeli godzimy się na odczyt nieświeżych danych, a chcemy mieć możliwość kontroli obciążenia odczytów). W normalnym scenariuszu próba odczytu z repliki \textit{slave} jest przekierowywana do odpowiadającego jej węzła \textit{master}, jednak polecenie \texttt{READONLY} wymusza odczyt bezpośrednio z repliki podrzędnej \cite{rediscluster}.
+
+% TODO "How Redis replication works"
+
+\subsubsection*{Sharding}
+
+Autorzy postawili sobie za cel osiągnięcie ,,wysokiej wydajności i skalowalności przy zachowaniu słabych, lecz rozsądnych gwarancji bezpieczeństwa danych i dostępności systemu''. Kierowanie poleceń do odpowiednich węzłów w module Redis Cluster odbywa się przez określanie dla danego polecenia węzła odpowiedzialnego za odpowiednią dla wskazanego klucza część przestrzeni kluczy; klienty z czasem zapamiętują, który węzeł obsługuje jaki podzbiór kluczy i mogą kierować zapytania o dany klucz bezpośrednio do danego węzła \cite{rediscluster}.
+
+Redis Cluster dzieli klucze pomiędzy pewną liczbę węzłów \textit{master} --- przestrzeń kluczy jest dzielona na 16384 sloty, za każdy z których odpowiedzialna jest w danej chwili (w stanie stabilnym klastra, tj. gdy nie trwa żadna operacja przenoszenia slotów między węzłami) jedna replika \textit{master}. Klucze jednoznacznie przydzielane są do określonego slotu funkcją haszującą, przy czym dostępny jest mechanizm wymuszania przyporządkowania dwóch kluczy do tego samego slotu.
+
+Rekonfiguracja posiadania slotów odbywa się w sytuacji opuszczenia klastra przez węzeł, dołączenia nowego węzła lub równoważenia dystrybucji przestrzeni kluczy. Węzły biorące udział w przenoszeniu między sobą części przestrzeni kluczy nakazują klientowi wykonanie odpowiednich przekierowań w trakcie tego procesu, w celu zapewnienia, że w danej chwili autorytatywny dla danego klucza jest jeden węzeł \textit{master}.
+
+Redis Cluster zawiera też szereg rozwiązań dotyczących obsługi sytuacji awaryjnych --- przykładowo, węzły \textit{slave} przejmują role węzłów nadrzędnych w sytuacji ich awarii, a procesy \textit{master} dołączające ponownie do klastra konfigurują się jako węzły \textit{slave} dla ostatnio posiadanej przez nich części przestrzeni kluczy. Dokumentacja podaje, że system jest w stanie funkcjonować przy partycjach z osiągalnością większości węzłów \textit{master} i przynajmniej jednego węzła \textit{slave} dla każdego nieosiągalnego węzła \textit{master}.
+
+\subsubsection*{Spójność danych}
+
+Redis Cluster został przez jednego z twórców określony jako system ,,z naciskiem na spójność danych kosztem dostępności'', jednak ,,rzadko w jego kontekście dyskutowano na temat aspektu spójności ostatecznej'' \cite{antirez}.  Autorzy w samej dokumentacji przyznają, że replikacja pomiędzy węzłami jest asynchroniczna, a podczas podziałów sieci (niezależnie od tego, czy klient podłączony jest do partycji większościowej, czy mniejszościowej) zawsze jest pewien okres, w którym zapisy mogą zostać utracone.
+
+Redis Cluster nie zapewnia żadnej formy silnej spójności, tj. mogą istnieć przypadki, w których utracone zostaną zapisy potwierdzone klientowi jako wykonane. Węzeł \textit{master} potwierdza wykonanie zapisu i propaguje go do swoich replik \textit{slave} bez oczekiwania na potwierdzenia od nich. Jeśli pomiędzy odesłaniem odpowiedzi klientowi a odebraniem przez wszystkie repliki podrzędne propagacji zapisu węzeł nadrzędny ulegnie awarii, jeden z węzłów \textit{slave}, który nie odebrał jeszcze zapisu, może przejąć rolę \textit{master}, co doprowadzi do całkowitej utraty zapisu \cite{redisclustertut}. Z tego też powodu, pomiimo iż Redis posiada możliwość użycia polecenia \texttt{WAIT} do wymuszenia synchronicznego trybu zapisu, nawet wtedy nie jest gwarantowana silna spójność.
+
+Kontrola stopnia spójności na poziomie systemu zarządzania bazą danych jest zatem praktycznie zerowa, wymagając od programisty chcącego zaimplementować scenariusz z określonymi wymaganiami co do spójności danych obszernej wiedzy na temat funkcjonowania mechanizmów tego DBMS i warunków, w jakich ma funkcjonować tworzony system.
+
+\subsection{Riak}
+
+Riak KV autorstwa Basho Technologies jest systemem realizującym w środowisku rozproszonym model klucz-wartość nastawionym m.in. na łatwość skalowania i tolerancję awarii, wspierającym szereg struktur danych (flagi, rejestry, liczniki, zbiory, mapy, \textit{HyperLogLog}) i zaawansowanych mechanizmów przeszukiwania i przetwarzania danych. Riak dostępny jest w różniących się poziomem funkcjonalności i wsparcia wersjach licencjonowanych na warunkach Apache 2 lub komercyjnie (gdzie istnieje m.in. dodatkowo możliwość replikacji na poziomie wielokrotnych klastrów.
+
+Riak w stosunku do Redis posiada bardziej zaawansowane mechanizmy kontroli spójności danych, koncentrujące się wokół koncepcji spójności ostatecznej (\textit{eventual consistency}), lecz obejmujące także eksperymentalny (deklarowany przez twórców jako niegotowy do funkcjonowania produkcyjnego) komponent dla silnej spójności. System jest wobec twierdzenia CAP (zob. \ref{captheorem}) jako AP w przypadku pracy w trybie spójności ostatecznej lub CP przy pracy w trybie spójności silnej \cite{riakreplprop}.
+
+\subsubsection*{Schemat replikacji i shardingu}
+
+Riak organizuje dane w kubełkach (\textit{bucket}), reprezentujących przestrzenie kluczy dla składowanych obiektów. Przestrzeń kluczy jest dzielona na partycje, obejmowane przez węzły wirtualne (\textit{vnode}) (swoiste procesy zarządców partycji), które z kolei rozlokowane są na maszynach fizycznych. Każda para kubełek/klucz ma obliczony 160-bitowy skrót, który jest mapowany na pewną pozycję w uporządkowanym pierścieniu wszystkich możliwych wartości (jedna z technik \textit{consistent hashing}).
+
+Na poziomie kubełków istnieje możliwość dostosowania szeregu parametrów działania systemu, m.in. stopnia replikacji (na ilu węzłach ma być składowany dany obiekt) czy wartości kworum dla odczytu i zapisu (tj. liczby serwerów, które muszą odpowiedzieć na żądanie odczytu/zapisu). Dobór tych wartości wymaga osiągnięcia kompromisu pomiędzy dokładnością danych a opóźnieniami odpowiedzi (szczególnie w przypadkach niedostępności części węzłów). Dostępne są też symboliczne specyfikatory parametrów --- \textit{all}, \textit{one}, \textit{quorum}, oznaczające odpowiednio: konieczność odpowiedzi od wszystkich replik, jednej repliki lub większości replik.
+
+Węzły (zorganizowane w sposób równorzędny, bez schematu \textit{master-slave}) utrzymują związane z poszczególnymi zapisami znaczniki w postaci klasycznych zegarów wektorowych lub ich rozszerzonej postaci (zwanej DVV - \textit{Dotted Version Vectors}), zakładając, że przechowywane na danej replice mogą być równocześnie różne konfliktowe wersje zmiennej w przypadku współbieżnych zapisów (przy włączonej opcji \texttt{allow\_mult} --- w przeciwnym razie Riak podejmie próbę automatycznego rozwiązania konfliktu na bazie zegarów wektorowych, a przy dodatkowo włączonej opcji $last_write_wins$ obowiązuje zasada \textit{last write wins}). Różnica DVV w stosunku do klasycznych zegarów wektorowych polega na identyfikowaniu każdej zapisanej wartości przez operację aktualizacji, która utworzyła tę wartość --- technika ta ma na celu rozwiązanie problemu narastającego rozmiaru przechowywanych zdarzeń współbieżnych \cite{riakdvv}.
+
+Po pomyślnym wykonaniu przez klienta odczytu, jeżeli nie wszystkie repliki odpowiedziały taką samą wartością na dane żądanie, uruchamiany jest mechanizm \textit{read repair}, w ramach którego ,,wygrywa'' wartość o najpóźniejszym znaczniku zegara wektorowego \footnote{Powiemy, że zegar wektorowy $VC_1$ dany jako wektor $n$ liczb jest późniejszy od danego w tej samej postaci innego zegara wektorowego $VC_2$, jeżeli: $\forall i\in\{1,\dots,n\} : VC_1(i)\geq VC_2(i)$} --- lub, w przypadku innego ustawienia klastra, klient może otrzymać wiele wersji zmiennej, opatrzonych zegarami wektorowymi wskazującymi na rozbieżność historii na poszczególnych replikach. Konieczność wywołania mechanizmu \textit{read repair} zachodzi też np. po zwiększeniu stopnia replikacji kubełka --- repliki, które powinny posiadać daną wartość, a zwróciły komunikat $not found$, otrzymają dzięki temu mechanizmowi aktualne dane \cite{riakrepl}.
+
+Riak zawiera mechanizmy zapewniające wysoką dostępność klastra --- przykładowo w sytuacjach, gdy nie wszystkie węzły są osiągalne, używa mechanizmu \textit{sloppy quorum}, w którym żądania zapisu kierowane do nieosiągalnego węzła przejmowane są przez inny, dostępny węzeł, a następnie po powrocie nieosiągalnego węzła do klastra otrzymuje on aktualizację zawierającą operacje, które ,,przegapił'' (mechanizm \textit{hinted handoff}). \cite{riakgloss}
+
+\subsubsection*{Spójność danych}
+
+% [BK] tutaj taka uwaga - posługujesz się oznaczeniami N, R, W, ale nie ma nigdzie co oznaczają - dałbym wyjaśnienie
+% [BK] wyjaśnione, postaram się też o przypis.
+Zgodnie z wyrażoną twierdzeniem CAP (zob. \ref{captheorem}) koniecznością kompromisu pomiędzy poziomem spójności a dostępnością systemu w sytuacjach awaryjnych, kombinacje ustawień systemu Riak dające silniejszą spójność danych mają negatywny wpływ na dostępność systemu rozumianą jako gwarancję otrzymania odpowiedzi na żądanie inną niż komunikat błędu. Głównym narzędziem, jakie Riak dostarcza w celu dostosowywania poziomu spójności danych, jest sterowanie wartościami $R$ oraz $W$, oznaczającymi odpowiednio: liczbę węzłów, które muszą wyrazić zgodę na operację zapisu, oraz tych, które muszą wyrazić zgodę na operację odczytu, w kontekście liczby $N$ - wszystkich procesów w systemie. Klasycznie w systemach opartych na głosowaniu statycznym warunkiem silnej spójności jest $W + R > N$ \cite{goldw89}, ponieważ nawet w sytuacjach wystąpienia awarii zbiór węzłów, które zgodziły się na zapis, i tych, które wydały zgodę na odczyt, zawsze zawiera pewną część wspólną, przez co system nigdy nie zwróci wartości nieświeżej --- przynajmniej jeden węzeł, którego zgody potrzeba na odczyt, będzie posiadał ostatnio zapisaną zmianę. W innych ustawieniach gwarancje dawane przez Riak kończą się na spójności ostatecznej.
+
+Riak posiada też eksperymentalny tryb \textit{strongly consistent}, w którym ignoruje wszystkie parametry spójności poza $N$ i do poprawnego działania wymaga, by dostępne repliki tworzyły kworum ($\frac{N}{2} + 1$). Tryb ten nakłada silniejsze ograniczenia dotyczące dostępności systemu i wiąże się z pewnym kosztem wydajnościowym \cite{riakstrongref}.
+
+\subsection{CosmosDB}
+
+Komercyjna propozycja firmy Microsoft zintegrowana z platformą Azure, a zatem korzystająca z licznych centrów danych tej platformy rozlokowanych na całym świecie, została przedstawiona w maju 2017 jako rozwinięcie funkcjonującego wcześniej systemu DocumentDB. Pozwala na przechowywanie danych w wielu modelach, udostępniając interfejsy zgodne z API m.in. MongoDB, DocumentDB, Graph API, Table API \cite{cosmos1}. CosmosDB udostępnia m.in. transparentne partycjonowanie danych, elementy logiki transakcyjnej, regulowany poziom spójności.
+
+Każdy element danych posiada parametry \textit{partition key} (identyfikujący obiekty, które powinny znaleźć się na jednej partycji) oraz \textit{row key} --- parametry unikalnie go identyfikujące, których semantyka różni się w zależności od stosowanego API. Na niższym poziomie, na podstawie parametrów przepustowościowych zadanych przez użytkownika, rozlokowywana jest automatycznie odpowiednia liczba fizycznych partycji, pomiędzy którymi w możliwie równy sposób dzielona jest przestrzeń kluczy (stosowana jest funkcja haszująca do określenia, jaki \textit{partition key} należy do jakiej partycji)\cite{cosmopart}, które mogą być w sposób dynamiczny dalej dzielone w razie osiągnięcia przez którąś z partycji limitu pojemności danych.
+
+Interesującym zagadnieniem w CosmosDB są zapewniane przez ten system możliwości regulacji spójności danych. CosmosDB udostępnia pięć następująco opisanych w dokumentacji poziomów spójności, w kolejności od najsilniejszego (każdy następny poziom zawiera się w poprzednim wymienionym) \cite{cosmoscons}:
+\begin{itemize}
+    \item Spójność silna (\textit{Strong}) --- gwarancja zachowania własności liniowości; zapisy widoczne po trwałym zapisie przez większość replik, odczyty potwierdzane przez kworum,
+    \item Ograniczona nieświeżość danych (\textit{Bounded Staleness}) --- tolerancja określana jako: co najwyżej $k$ wersji lub czas $t$,
+    \item Spójność sesji (\textit{Session}) --- zapewnia spełnienie gwarancji sesji: \textit{Read Your Writes}, \textit{Monotonic Reads}, \textit{Writes Follow Reads} i \textit{Monotonic Writes} (zob. \ref{subsection:clientcentric}),
+    \item Spójność prefiksu (\textit{Consistent Prefix}) --- przy nieobecności kolejnych zapisów, repliki ostatecznie osiągną zbieżność; zapisy zlecone w określonej kolejności przez klienta nigdy nie zostaną odczytane w kolejności niezgodnej z ich zleceniem,
+    \item Spójność ostateczna (\textit{Eventual Consistency}) --- przy nieobecności kolejnych zapisów, repliki ostatecznie osiągną zbieżność; klient może odczytywać wartości starsze niż te, które już wcześniej odczytywał.
+\end{itemize}
+
+CosmosDB daje zatem szerokie możliwości dostosowania poziomu spójności do potrzeb danej aplikacji, bliskie ideom przyświecającym autorom niniejszej pracy; niemniej jednak należy zauważyć, że dokumentacyjny opis poszczególnych poziomów spójności w tym systemie nie jest miejscami wystarczająco precyzyjny.
+
+% http://www.christof-strauch.de/nosqldbs.pdf
+
+% \section{qqq} \label{section:qqq}
+
+
+
+% CosmosDB
+% https://docs.microsoft.com/en-us/azure/cosmos-db/consistency-levels

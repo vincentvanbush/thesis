@@ -1,0 +1,74 @@
+\chapter{Wstęp} \label{chapter:intro}
+
+Technologie składowania danych, jako jednej z podstawowych funkcjonalności komputerów i systemów informatycznych, podlegają nieustannej ewolucji, będącej wypadkową takich czynników, jak: rozwój fizycznych nośników przechowujących dane (na przykład poprzez zwiększanie gęstości zapisu) i rozbudowa technik transmisji danych (obejmująca między innymi dążenie do zwiększania prędkości przesyłu czy też zmniejszania opóźnień). Wykładniczo rosnąca z upływem czasu ilość fizycznie istniejących danych pociąga za sobą konieczność poszukiwania efektywniejszych sposobów zapisu danych tak, by zmieścić ich jak najwięcej na pojedynczym fizycznym nośniku. Rosnąca objętość danych pociąga za sobą konieczność wydajniejszej ich transmisji zarówno do podzespołów odpowiedzialnych za ich przetwarzanie, jak i pomiędzy poszczególnymi fizycznymi nośnikami.
+
+Rozproszone systemy informatyczne, których intensywny rozwój i wzrost intensywności związanych z nimi prac naukowych jest ściśle powiązany z powstawaniem w latach 70-tych i 80-tych XX wieku sieci komputerowych o rozległej skali, znajdują szerokie zastosowanie we współczesnych technologiach składowania danych. Rozwijane przez całą drugą połowę XX wieku technologie baz danych stanowiły podstawę do badań problematyki przechowywania danych w systemach rozproszonych --- z myślą o przystosowaniu zbiorów do dostępu zdalnego w sieciach charakteryzujących się znacznymi odległościami między węzłami i słabymi gwarancjami dotyczącymi ich niezawodności. System rozproszony powinien przy tym zapewniać pewien rodzaj transparentności, rozumianej najczęściej jako nierozróżnialność takiego systemu ze względu na jego zachowanie od systemu lokalnego.
+
+Dynamiczny rozwój technologii transmisji danych pozwala na coraz szersze stosowanie rozproszonych systemów gromadzenia informacji w sytuacji, w której w zastosowaniu są liczne urządzenia o ograniczonych możliwościach lokalnego składowania danych. Z tego względu uwagę zwracają systemy umożliwiające składowanie danych w środowisku rozproszonym. Rozwiązania te często stanowią nadbudowę (tzw. \textit{middleware}) nad istniejącymi już systemami składowania lokalnego, kontrolując udostępnianie replik i spójność danych składowanych na wielu węzłach.
+
+% Niniejsza praca stanowi próbę zaprojektowania i implementacji systemu, który --- opierając się o istniejące rozwiązania składowania lokalnego, funkcjonując jako warstwa tzw. \textit{middleware} --- zapewnia warunki do składowania danych z szerokimi możliwościami kontroli jego działania przez twórcę aplikacji konsumującej dane.
+
+\section{Cele i zakres pracy}
+
+Głównym celem niniejszej pracy dyplomowej jest opracowanie i prototypowa implementacja mechanizmu replikacji dla systemu bazy danych typu NoSQL w modelu klucz-wartość, który umożliwia dostęp do danych zgodnie z modelem spójności wyspecyfikowanym przy zlecaniu operacji, wyrażonym jako kombinacja modelu danocentrycznego i/lub wymagań odnośnie gwarancji sesji.
+
+Jako wypadkowa analizy istniejących rozwiązań oraz opisywanych w literaturze modeli spójności i innych uwarunkowań funkcjonujących w systemach replikowanych, przedstawiona zostanie koncepcja algorytmu koordynacji replik stanowiąca podstawę do prototypowej implementacji w języku Scala, a także do dalszych rozważań dotyczących możliwych usprawnień systemu. Powstałe rozwiązanie zostanie przeanalizowane pod kątem efektywnościowym od strony teoretycznej oraz w praktyce.
+
+% \section{Zakres pracy}
+Wykonana praca obejmuje następujące elementy:
+
+\begin{itemize}
+    \item Przegląd rozwiązań w zakresie systemów baz danych typu klucz-wartość oraz mechanizmów replikacji w tych systemach ze szczególnym uwzględnieniem problematyki spójności.
+    % [BK] Nie przypominam sobie, aby w pracy były jakieś "mechanizmy synchronizacji danych"
+    % [MB] Takie pojęcie pojawiało się w karcie pracy i uważam że spokojnie możemy rozumieć to jako metody, których używają istniejące systemy do koordynacji replik danych.
+    \item Przegląd modeli spójności replik oraz mechanizmów synchronizacji danych.
+    \item Opracowanie koncepcji udostępniania replik w wielowersyjnym modelu spójności.
+    \item Realizacja opracowanej koncepcji w prototypowym systemie bazy danych typu klucz-wartość.
+    \item Analiza możliwości realizacji wielowersyjnego modelu spójności w istniejących systemach typu NoSQL.
+
+\end{itemize}
+
+\section{Podział zadań}
+Zadania składające się na wykonaną pracę są podzielone w następujący sposób:
+\begin{itemize}
+    \item Michał Buszkiewicz: przegląd rozwiązań w zakresie systemów baz danych typu klucz wartość oraz mechanizmów replikacji w tych systemach, opracowanie koncepcji udostępniania danych w wielowersyjnym modelu spójności, implementacja interfejsu dostępu do danych, testy poprawności.
+    \item Bartosz Kostaniak: przegląd modeli spójności replik oraz mechanizmów synchronizacji danych, opracowanie koncepcji synchronizacji replik, implementacja protokołu spójności, testy wydajnosci.
+\end{itemize}
+
+
+\section{Struktura pracy}
+
+% 3 Przegląd istniejących rozwiązań
+% Redis, memcached, systemy stricte do replikowania danych
+
+% 4 Opis proponowanego systemu
+% Koncepcja, pseudokody, rysunki, schematy objaśniające, własności z punktu widzenia istotnych kryteriów
+
+% 5 Implementacja
+% Szczegóły - język, biblioteki, struktura projektu, klas ...
+
+% 6 Testy wydajnościowe
+% Na sieci lokalnej i rozległej, np. porównanie wydajności dla poszczególnych spójności. Być może warto byłoby użyć jakiegoś bardziej izolowanego środowiska (DW wspomniał o jakimś HPC gdzie można byłoby postawić to bez wirtualizacji), ale zostaje problem symulowania opóźnień sieci rozległych.
+
+% 7 Podsumowanie i wnioski
+
+Materiał, jaki obejmuje niniejsza praca dyplomowa, został przedstawiony w następującym porządku:
+\begin{itemize}
+
+\item Rozdział \ref{chapter:replication} (,,Problematyka replikacji danych'') zawiera przegląd zagadnień związanych ze zwielokrotnianiem kopii danych i problematyką spójności w ujęciu danocentrycznym, jak również klientocentrycznym --- poprzedzony zdefiniowaniem modelu systemu rozproszonego jako podstawy do dalszych rozważań.
+
+\item Rozdział \ref{chapter:existingsolutions} (,,Przegląd istniejących rozwiązań'') opisuje funkcjonujące na rynku systemy baz danych typu klucz-wartość ze szczególnym uwzględnieniem rozwiązań replikacji danych, co stanowi punkt odniesienia dla określenia cech, jakimi ma charakteryzować się wytworzona w ramach pracy aplikacja.
+
+\item Rozdział \ref{chapter:systemdescription} (,,Opis proponowanego systemu'') nakreśla wypracowaną w ramach niniejszej pracy koncepcję systemu poprzez zaprezentowanie pseudokodów i schematów z objaśnieniem działania opracowanych algorytmów, a także analizą z punktu widzenia istotnych kryteriów poprawności, spójności i złożoności komunikacyjnej.
+
+% [BK] można dać jakieś zdanie o tolerancji awarii - to też jest w tym rozdziale
+% [MB] :+1:
+\item Rozdział \ref{chapter:implementation} (,,Implementacja'') prezentuje implementacyjne aspekty wykonanego prototypu opartego na opisanej koncepcji --- język programowania, zastosowane biblioteki, techniczną strukturę projektu. Rozdział ten ustosunkowuje się także do problematyki tolerancji awarii, wskazując braki systemu w tym zakresie oraz propozycje ich rozwiązań.
+
+\item Rozdział \ref{chapter:summary} (,,Podsumowanie'') zamyka pracę dyplomową bilansem wykonanych prac i rozważaniem na temat kierunków możliwych dalszych prac nad systemem.
+
+\end{itemize}
+
+\subsection*{Zawartość płyty CD}
+
+Do niniejszej pracy dyplomowej została dołączona płyta CD zawierająca pracę dyplomową w formatach PDF i LaTeX oraz kod źródłowy prototypowego systemu wytworzonego jako element pracy.
