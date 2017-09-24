@@ -11,20 +11,23 @@ Rozdział ten zawiera opis rozwiązań zastosowanych w proponowanym systemie ora
 
 % [MB] "Specyfikowanie wymagań dla operacji na danych". Uciąć "na danych" jeśli nie zmieści się w jednym wierszu. Tytuły powinny być raczej krótkie :)
 
-\section{Możliwości systemu w kontekście specyfikowania wymagań operacji} \label{section:requirements_specifying}
+\section{Specyfikowanie wymagań dla operacji} \label{section:requirements_specifying}
 
 System replikowanej bazy danych proponowany w niniejszej pracy pozwala na określenie dla każdej operacji (zapisu lub odczytu) wymagań odnośnie modelu danocentrycznego i/lub gwarancji sesji, które mają być zachowane przy jej wykonaniu. Spośród modeli danocentrycznych możliwe jest wyspecyfikowanie jednego z następujących:
 
 \begin{itemize}
     \item model spójności sekwencyjnej
-    \item model spójności podręcznej (ang. \textit{cache})
+    \item model spójności podręcznej (ang.\ \textit{cache})
     \item model spójności przyczynowej
     \item model spójności PRAM
 \end{itemize}
 
 Każdy z tych modeli rozumiany jest według definicji podawanych w rozdziale \ref{chapter:replication}. Należy jednak podkreślić, że model danocentryczny podaje się tylko i wyłącznie przy zlecaniu operacji odczytu danych, ponieważ system przechowuje każdą z wartości pod wieloma wersjami, zgodnymi z różnymi modelami spójności danocentrycznej, co zostanie dokładnie opisane w dalszej części niniejszego rozdziału.
 
-Dodatkowo, możliwe jest także określenie (w przypadku zarówno operacji odczytu, jak i zapisu) jednej lub wielu gwarancji sesji, zgodnie z którymi ma być przeprowadzona dana operacja. Użytkownik może wybierać spośród wszystkich modeli klientocentrycznych omawianych w rozdziale \ref{chapter:replication}, tj.:
+Dodatkowo, możliwe jest także określenie (w przypadku zarówno operacji odczytu, jak i zapisu) jednej
+lub wielu gwarancji sesji, zgodnie z którymi ma być przeprowadzona dana operacja. Użytkownik może
+wybierać spośród wszystkich modeli klientocentrycznych omawianych w rozdziale
+\ref{chapter:replication}, tj.:
 
 \begin{itemize}
     \item \textit{Read Your Writes}
@@ -33,19 +36,21 @@ Dodatkowo, możliwe jest także określenie (w przypadku zarówno operacji odczy
     \item \textit{Writes Follow Reads}
 \end{itemize}
 
-W tym miejscu należy jednak odpowiedzieć na pytanie: w jaki sposób można korzystać z proponowanego rozwiązania i zlecać systemowi wykonywanie poszczególnych operacji? Implementacja omawianego rozwiązania zawiera prostego klienta systemu, który w intefejsie konsolowym pozwala na tworzenie i wysyłanie żądań do systemu. Sposób wprowadzania komend do klienta zostanie omówiony w następnym punkcie.
+Proponowany system przyjmuje zlecenia wykonania operacji w formie tekstowej, zgodnie ze składnią obejmującą rodzaj polecenia (odczyt lub zapis), model spójności po stronie serwerowej (tylko dla operacji odczytu), gwarancje sesji oraz opcjonalne wymuszenie oczekiwania na odpowiedź. Implementacja omawianego rozwiązania (opisana szerzej w rozdziale \ref{chapter:implementation}) zawiera prostego klienta systemu, który pozwala na tworzenie i wysyłanie żądań do systemu poprzez interfejs konsolowy lub żądania HTTP. Sposób wprowadzania komend do klienta zostanie omówiony w następnym punkcie.
 
-\subsubsection{Interfejs konsolowy klienta systemu} \label{subsubsection:console_interface}
+\subsection{Składnia poleceń klienta systemu} \label{subsubsection:console_interface}
 
-Interfejs konsolowy pozwala na wysyłanie do systemu żądań zapisu oraz odczytu danych z podanymi wymaganiami odnośnie modelu danocentrycznego i/lub gwarancji sesji. Po wpisaniu każdego żądania należy wcisnąć klawisz Enter, aby je zatwierdzić. Po zatwierdzeniu pojawi się odpowiedź z systemu zawierająca w przypadku operacji zapisu wartość pustą \texttt{None}, a w przypadku operacji odczytu wartość zmiennej, której dotyczyło żądanie lub \texttt{None}, jeśli podany klucz nie istnieje.
+Klient posiada interfejs pozwalający na wysyłanie do systemu żądań zapisu oraz odczytu danych z podanymi wymaganiami odnośnie modelu danocentrycznego i/lub gwarancji sesji. Po wpisaniu każdego żądania w kliencie konsolowym należy wcisnąć klawisz Enter, aby je zatwierdzić; żądania przez HTTP przyjmowane są przez klienta na porcie 8080 w ciele żądania POST pod adresem \texttt{/input}. Po zatwierdzeniu pojawi się odpowiedź z systemu zawierająca w przypadku operacji zapisu wartość pustą \texttt{None}, a w przypadku operacji odczytu wartość zmiennej, której dotyczyło żądanie lub \texttt{None}, jeśli podany klucz nie istnieje.
 
-Składnia dla polecenia zapisu danych do systemu jest następująca:
+Składnia dla polecenia zapisu danych do systemu jest następująca (gwiazdką oznaczono pola opcjonalne):
 
 \begin{itemize}[label={}]
-    \item \texttt{= <klucz> <wartość> <gwarancja sesji>*}
+    \item \texttt{= <klucz> <wartość> <gwarancja sesji>* wait*}
 \end{itemize}
 
-Tak zdefiniowane żądanie oznacza operację zapisu wartości \texttt{<wartość>} w miejsce klucza \texttt{<klucz>}, zachowując przy tym opcjonalne \texttt{<gwarancje sesji>}, oddzielone od siebie spacją. Odpowiednie gwarancje sesji oznaczane są poprzez skróty, i tak \texttt{ryw} oznacza gwarancję \textit{Read Your Writes}, \texttt{mw} gwarancję \textit{Monotonic Writes}, \texttt{mr} gwarancję \textit{Monotonic Reads}, a \texttt{wfr} \textit{Writes Follow Reads}. Przykładami poprawnych żądań są zatem:
+Tak zdefiniowane żądanie oznacza operację zapisu wartości \texttt{<wartość>} w miejsce klucza \texttt{<klucz>}, zachowując przy tym opcjonalne \texttt{<gwarancje sesji>}, oddzielone od siebie spacją. Odpowiednie gwarancje sesji oznaczane są poprzez skróty, i tak \texttt{ryw} oznacza gwarancję \textit{Read Your Writes}, \texttt{mw} gwarancję \textit{Monotonic Writes}, \texttt{mr} gwarancję \textit{Monotonic Reads}, a \texttt{wfr} \textit{Writes Follow Reads}. Obecność słowa \texttt{wait} w specyfikacji zlecanej operacji oznacza wymuszenie przetworzenia kolejnych zleconych operacji dopiero po otrzymaniu odpowiedzi na wskazaną operację. Jest to użyteczne w sytuacji, gdy używane są gwarancje sesji, ponieważ operacje z ich wykorzystaniem bazują na znacznikach czasowych aktualizowanych w momencie odbierania odpowiedzi z serwera.
+
+Przykładami poprawnych żądań są zatem:
 
 \begin{itemize}[label={}]
     \item \texttt{= title "Multiversion consistency model of key-value storage"}
@@ -54,16 +59,18 @@ Tak zdefiniowane żądanie oznacza operację zapisu wartości \texttt{<wartość
     
     \item \texttt{= city Poznan wfr}
     
-    Oznacza zapisanie pod kluczem \texttt{city} wartości Poznan, przy czym zapis ten musi nastąpić na wszystkich serwerach po odczytach, które potencjalnie przyczynowo poprzedzały wykonanie tego zapisu, tj. musi zostać zachowana gwarancja \textit{Writes Follow Reads}
+    Oznacza zapisanie pod kluczem \texttt{city} wartości Poznan, przy czym zapis ten musi nastąpić
+        na wszystkich serwerach po odczytach, które potencjalnie przyczynowo poprzedzały wykonanie
+        tego zapisu, tj.\ musi zostać zachowana gwarancja \textit{Writes Follow Reads}
 \end{itemize}
 
 Składnia dla polecenia odczytu danych z systemu jest następująca:
 
 \begin{itemize}[label={}]
-    \item \texttt{? <klucz> <model spójności> <gwarancja sesji>*}
+    \item \texttt{? <klucz> <model spójności> <gwarancja sesji>* wait*}
 \end{itemize}
 
-Komenda wpisana zgodnie z podanym powyżej wzorcem oznacza żądanie odczytu danych znajdujących się pod kluczem \texttt{<klucz>} zgodnie z danocentrycznym \texttt{<modelem~spójności>} oraz przy zachowaniu podanych, opcjonalnych \texttt{<gwarancji sesji>}, oddzielonych od siebie spacją. Spośród modeli danocentrycznych system akceptuje następujące nazwy: \texttt{sequential} dla spójności sekwencyjnej, \texttt{causal} dla spójności przyczynowej, \texttt{cache} dla spójności podręcznej oraz \texttt{pram} dla spójności PRAM. Podanie parametru \texttt{<model spójności>} jest co prawda obowiązkowe, aczkolwiek w przypadku, gdy nie chcemy nakładać ograniczenia na model danocentryczny, zgodnie z którym należy pobrać dane, możemy posłużyć się najsłabszym modelem PRAM, wpisując jako wartość tego parametru \texttt{pram}.
+Komenda wpisana zgodnie z podanym powyżej wzorcem oznacza żądanie odczytu danych znajdujących się pod kluczem \texttt{<klucz>} zgodnie z danocentrycznym \texttt{<modelem~spójności>} oraz przy zachowaniu podanych, opcjonalnych \texttt{<gwarancji sesji>}, oddzielonych od siebie spacją. Spośród modeli danocentrycznych system akceptuje następujące nazwy: \texttt{sequential} dla spójności sekwencyjnej, \texttt{causal} dla spójności przyczynowej, \texttt{cache} dla spójności podręcznej oraz \texttt{pram} dla spójności PRAM. Podanie parametru \texttt{<model spójności>} jest co prawda obowiązkowe, aczkolwiek w przypadku, gdy nie chcemy nakładać ograniczenia na model danocentryczny, zgodnie z którym należy pobrać dane, możemy posłużyć się najsłabszym modelem PRAM, wpisując jako wartość tego parametru \texttt{pram}. Parametr \texttt{wait} funkcjonuje identycznie, jak w operacjach zapisu.
 
 Przykładowymi, poprawnymi żądaniami odczytu są więc:
 
@@ -81,6 +88,13 @@ Przykładowymi, poprawnymi żądaniami odczytu są więc:
     Oznacza pobranie wartości klucza \texttt{author} zgodnej z modelem spójności sekwencyjnej, zachowując jednocześnie gwarancje sesji \textit{Read Your Writes} oraz \textit{Monotonic Reads}, co oznacza, że odczyt ten będzie widział poprzednie zapisy użytkownika do klucza \texttt{author} oraz każdy kolejny odczyt widział będzie stan wartości pod tym kluczem co najmniej tak aktualny jak przy powyższym odczycie
 \end{itemize}
 
+Klient przyjmuje też polecenia sterujące:
+
+\begin{itemize}
+    \item \texttt{c <ip>:<port>} - podłączenie do serwera o adresie \texttt{ip} nasłuchującego na porcie TCP \texttt{port},
+    \item \texttt{w <ms>} - wymuszenie oczekiwania przed wykonaniem następnego zlecenia.
+\end{itemize}
+
 % [MB] "Wielowersyjność danych" - jw., zróbmy krótsze tytuły
 
 \section{Wielowersyjność danych} \label{section:multiversioning_realization}
@@ -89,30 +103,64 @@ Początek bieżącego rozdziału zawiera informacje o możliwościach proponowan
 
 \subsection{Bufor entropii}
 
-Każda operacja zapisu danych do systemu trafia od klienta do jednego z serwerów (a ściślej biorąc --- do aktora klasy \texttt{RequestAcceptor}, będącego częścią serwera). Tam operacja ta jest zapamiętywana w specjalnym \textit{buforze entropii}, nazwanym w implementacji \texttt{entropy}, a następnie jest rozpropagowywana do innych serwerów systemu, które także umieszczą ją w swoich lokalnych buforach entropii. Bufor ten zawiera operacje zapisu, co do których system nie ustalił jeszcze globalnego uszeregowania, zgodnego z modelem spójności sekwencyjnej. Należy odnotować, że w każdym z lokalnych buforów entropii kolejność operacji może być różna; w szczególności pewna operacja $ o $ może być obecna w pewnym momencie czasu w buforze entropii na serwerze $ S_i $, ale nie być jeszcze obecna w tej samej chwili czasu w buforze entropii na serwerze $ S_j $, różnym od $ S_i $, ze względu na opóźnienia w przesyłaniu wiadomości przez sieć komunikacyjną. Z tego względu przechowywanie operacji w buforze entropii ma charakter jedynie tymczasowy, tj. operacja jest w nim zapisana tylko do momentu ustalenia przez system jej globalnego numeru sekwencyjnego, umożliwiającego uznanie jej za operację zapisu ustalającą wartość spójną sekwencyjnie dla danego klucza. Po ustaleniu globalnego numeru sekwencyjnego dla operacji $ o $ jest ona usuwana z lokalnych zbiorów entropii. Więcej o tym procesie można przeczytać w sekcji \ref{section:materialization}.
+Każda operacja zapisu danych do systemu trafia od klienta do jednego z serwerów (a ściślej biorąc
+--- do aktora klasy \texttt{RequestAcceptor}, będącego częścią serwera). Tam operacja ta jest
+zapamiętywana w specjalnym \textit{buforze entropii}, nazwanym w implementacji \texttt{entropy}, a
+następnie jest rozpropagowywana do innych serwerów systemu, które także umieszczą ją w swoich
+lokalnych buforach entropii. Bufor ten zawiera operacje zapisu, co do których system nie ustalił
+jeszcze globalnego uszeregowania, zgodnego z modelem spójności sekwencyjnej. Należy odnotować, że w
+każdym z lokalnych buforów entropii kolejność operacji może być różna; w szczególności pewna
+operacja $ o $ może być obecna w pewnym momencie czasu w buforze entropii na serwerze $ S_i $, ale
+nie być jeszcze obecna w tej samej chwili czasu w buforze entropii na serwerze $ S_j $, różnym od $
+S_i $, ze względu na opóźnienia w przesyłaniu wiadomości przez sieć komunikacyjną. Z tego względu
+przechowywanie operacji w buforze entropii ma charakter jedynie tymczasowy, tj.\ operacja jest w nim zapisana tylko do momentu ustalenia przez system jej globalnego numeru sekwencyjnego, umożliwiającego uznanie jej za operację zapisu ustalającą wartość spójną sekwencyjnie dla danego klucza. Po ustaleniu globalnego numeru sekwencyjnego dla operacji $ o $ jest ona usuwana z lokalnych zbiorów entropii. Więcej o tym procesie można przeczytać w sekcji \ref{section:materialization}.
 
 Bufor entropii wykorzystywany jest w sytuacji, gdy użytkownik zleci odczyt wartości pod określonym kluczem, zgodnej z danocentrycznym modelem spójności: przyczynowej, podręcznej lub PRAM. Sposób, w jaki dokładnie zrealizowane zostało wyznaczanie wartości zgodnych z poszczególnymi, danocentrycznymi modelami spójności, opisany jest w sekcji \ref{section:value_construction}.
 
 \subsection{Przechowywanie danych spójnych sekwencyjnie}
 
-Każda operacja zapisu przechowywana w entropii, zakładając bezawaryjną pracę pewnego wyróżnionego serwera, zwanego \textit{sekwencerem}, uzyska w skończonym acz nieznanym czasie swój unikalny numer sekwencyjny. Innymi słowy, każdy zapis zostanie w jednoznaczny sposób globalnie uszeregowany oraz usunięty ze bufora entropii. Wartość przechowywana w takiej operacji (dotyczącej oczywiście pewnego określonego klucza) zostanie wówczas zapisana w używanej wewnętznie bazie danych. Może być to dowolna baza danych lub ogólniej sposób składowania danych (np. plik, pamięć), dla którego zdefiniowano odpowiedni interfejs (w implementacji nazwany \texttt{KeyValueBackend}). Proponowany system jest w stanie współpracować z bazą danych Redis, którego adapter zawiera prototypowa implementacja. Programista ma możliwość utworzenia analogicznych adapterów także dla innych systemów o podobnej charakterystyce. Więcej na ten temat można przeczytać w rozdziale \ref{chapter:implementation}.
+Każda operacja zapisu przechowywana w entropii, zakładając bezawaryjną pracę pewnego wyróżnionego
+serwera, zwanego \textit{sekwencerem}, uzyska w skończonym acz nieznanym czasie swój unikalny numer
+sekwencyjny. Innymi słowy, każdy zapis zostanie w jednoznaczny sposób globalnie uszeregowany oraz
+usunięty ze bufora entropii. Wartość przechowywana w takiej operacji (dotyczącej oczywiście pewnego
+określonego klucza) zostanie wówczas zapisana w używanej wewnętznie bazie danych. Może być to
+dowolna baza danych lub ogólniej sposób składowania danych (np.\ plik, pamięć), dla którego zdefiniowano odpowiedni interfejs (w implementacji nazwany \texttt{KeyValueBackend}). Proponowany system jest w stanie współpracować z bazą danych Redis, którego adapter zawiera prototypowa implementacja. Programista ma możliwość utworzenia analogicznych adapterów także dla innych systemów o podobnej charakterystyce. Więcej na ten temat można przeczytać w rozdziale \ref{chapter:implementation}.
 
-System zapewnia, dzięki mechanizmowi nadawania numerów sekwencyjnych respektujących porządek przyczynowy, że dane zapisane do wewnętrznej bazy są spójne sekwencyjnie, tzn. kolejność aplikowania zapisów jest w całym systemie taka sama oraz że odwzorowują one lokalne porządki wykonywania operacji w obrazie historii każdego z serwerów. Należy zaznaczyć, że procesem nadawania kolejnych numerów sekwencyjnych zajmuje się wyróżniony serwer, wspomniany wcześniej sekwencer, który na podstawie zawartości swojego bufora entropii oraz respektując porządek przyczynowy operacji zapisu, dokonuje globalnego uszeregowania tych operacji.
+System zapewnia, dzięki mechanizmowi nadawania numerów sekwencyjnych respektujących porządek
+przyczynowy, że dane zapisane do wewnętrznej bazy są spójne sekwencyjnie, tzn.\ kolejność aplikowania zapisów jest w całym systemie taka sama oraz że odwzorowują one lokalne porządki wykonywania operacji w obrazie historii każdego z serwerów. Należy zaznaczyć, że procesem nadawania kolejnych numerów sekwencyjnych zajmuje się wyróżniony serwer, wspomniany wcześniej sekwencer, który na podstawie zawartości swojego bufora entropii oraz respektując porządek przyczynowy operacji zapisu, dokonuje globalnego uszeregowania tych operacji.
 
 \subsection{Rozgłaszanie wiadomości w systemie}
 
-Proponowany system do rozsyłania komunikatów pomiędzy procesami wykorzystuje mechanizm zgodnego rozgłaszania niezawodnego, zachowującego kolejność FIFO (ang. \textit{FIFO regular reliable broadcast}). Jest on wykorzystywany w dwóch celach:
+Proponowany system do rozsyłania komunikatów pomiędzy procesami wykorzystuje mechanizm zgodnego
+rozgłaszania niezawodnego, zachowującego kolejność FIFO (ang.\ \textit{FIFO regular reliable broadcast}). Jest on wykorzystywany w dwóch celach:
 
 \begin{itemize}
     \item do rozgłaszania informacji o nowej operacjach zapisu w systemie
     \item do rozgłaszania nadanych przez sekwencer numerów sekwencyjnych dla określonych operacji
 \end{itemize}
 
-W pierwszym przypadku (rozgłaszania informacji o nowym zapisie w systemie), użycie mechanizmu rozgłaszania zachowującego kolejność FIFO (ang. \textit{First In, First Out}) jest kluczowe z punktu widzenia poprawności wyznaczania wartości zgodnych z każdym z dostępnych modeli danocentrycznych. Jest tak dlatego, że najsłabszy z dostępnych modeli, tj. model spójności PRAM, wymaga zachowania kolejności lokalnych operacji wykonywanych na serwerze $ S_i $ w obrazie historii każdego innego serwera. Zapewnienie tej własności realizowane jest właśnie poprzez użycie rozgłaszania wiadomości o przeprowadzanych operacjach zapisu za pomocą mechanizmu zachowującego kolejność FIFO. Dzięki niej każdy z serwerów będzie informowany o operacjach z każdego innego serwera z zachowaniem tego porządku. Każdy z pozostałych modeli spójności również wymaga, aby ta własność była zachowana w odniesieniu do wiadomości przechowywanych w buforze entropii, dlatego zaimplementowanie takiego mechanizmu jest kluczowe dla poprawności przetwarzania w proponowanym systemie.
+W pierwszym przypadku (rozgłaszania informacji o nowym zapisie w systemie), użycie mechanizmu
+rozgłaszania zachowującego kolejność FIFO (ang.\ \textit{First In, First Out}) jest kluczowe z
+punktu widzenia poprawności wyznaczania wartości zgodnych z każdym z dostępnych modeli
+danocentrycznych. Jest tak dlatego, że najsłabszy z dostępnych modeli, tj.\ model spójności PRAM, wymaga zachowania kolejności lokalnych operacji wykonywanych na serwerze $ S_i $ w obrazie historii każdego innego serwera. Zapewnienie tej własności realizowane jest właśnie poprzez użycie rozgłaszania wiadomości o przeprowadzanych operacjach zapisu za pomocą mechanizmu zachowującego kolejność FIFO. Dzięki niej każdy z serwerów będzie informowany o operacjach z każdego innego serwera z zachowaniem tego porządku. Każdy z pozostałych modeli spójności również wymaga, aby ta własność była zachowana w odniesieniu do wiadomości przechowywanych w buforze entropii, dlatego zaimplementowanie takiego mechanizmu jest kluczowe dla poprawności przetwarzania w proponowanym systemie.
 
-% [MB] Trzeba dodać przypis na temat tego pierwotnego algorytmu.
-
-Mechanizm zgodnego rozgłaszania niezawodnego zawarty w proponowanym systemie opiera się w swoim działaniu na aktywnym algorytmie zgodnego rozgłaszania niezawodnego. Oznacza to, że wiadomość rozgłaszana jest do wszystkich węzłów w systemie, przy czym o ile oryginalny algorytm zakłada ponowne rozesłanie wiadomości przez każdy z procesów (w razie gdyby proces rozgłaszający wiadomość uległ awarii w trakcie tego rozgłaszania i nie zdążył wysłać jej do wszystkich procesów), to algorytm wykorzystany w proponowanym systemie wprowadza istotną optymalizację. Rozsyłając wiadomość nadawca najpierw wysyła ją do każdego z węzłów, po czym do każdego z nich wysyła specjalną wiadomość, nazwaną w implementacji \texttt{StayingAlive}, informującą, że oryginalny nadawca wiadomości zdążył rozesłać ją do wszystkich węzłów systemu i nie uległ w tym czasie awarii. Węzły odbierające rozsyłaną wiadomość oczekują przez pewnien określony czas na otrzymanie komunikatu \texttt{StayingAlive}, którego nadejście oznacza, że retransmisja zgodnie z oryginalnym algorytmem nie jest potrzebna. Jeśli jednak komunikat \texttt{StayingAlive} nie dotrze na czas, wówczas normalnie dokonywane jest rozsyłanie otrzymanej wiadomości do wszystkich procesów, jak w oryginalnym algorytmie. Optymalizacja ta zmniejsza złożoność komunikacyjną algorytmu z $ O(n^2) $ w oryginalnym podejściu do $ O(n) $ (a dokładniej $ O(2n) $) w przypadku optymistycznym, gdy komunikat \texttt{StayingAlive} dotrze przed zakładanym czasem. Oczywiście w przypadku pesymistycznym, tj. gdy węzeł dokonujący rozgłaszania ulega w jego trakcie awarii lub komunikaty \texttt{StayingAlive} z jakiegoś powodu nie dotrą do odbiorców złożoność wynosi nadal $ O(n^2) $. Mimo to, w ogólnym rozrachunku powala ona znacząco zmniejszyć ilość komunikatów w systemie.
+Mechanizm zgodnego rozgłaszania niezawodnego zawarty w proponowanym systemie opiera się w swoim
+działaniu na aktywnym algorytmie zgodnego rozgłaszania niezawodnego, opisanego m. in. w książce
+\cite{Cachin:2011:IRS:1972495}. Oznacza to, że wiadomość rozgłaszana jest do wszystkich węzłów w
+systemie, przy czym o ile oryginalny algorytm zakłada ponowne rozesłanie wiadomości przez każdy z
+procesów (w razie gdyby proces rozgłaszający wiadomość uległ awarii w trakcie tego rozgłaszania i
+nie zdążył wysłać jej do wszystkich procesów), to algorytm wykorzystany w proponowanym systemie
+wprowadza istotną optymalizację. Rozsyłając wiadomość nadawca najpierw wysyła ją do każdego z
+węzłów, po czym do każdego z nich wysyła specjalną wiadomość, nazwaną w implementacji
+\texttt{StayingAlive}, informującą, że oryginalny nadawca wiadomości zdążył rozesłać ją do
+wszystkich węzłów systemu i nie uległ w tym czasie awarii. Węzły odbierające rozsyłaną wiadomość
+oczekują przez pewnien określony czas na otrzymanie komunikatu \texttt{StayingAlive}, którego
+nadejście oznacza, że retransmisja zgodnie z oryginalnym algorytmem nie jest potrzebna. Jeśli jednak
+komunikat \texttt{StayingAlive} nie dotrze na czas, wówczas normalnie dokonywane jest rozsyłanie
+otrzymanej wiadomości do wszystkich procesów, jak w oryginalnym algorytmie. Optymalizacja ta
+zmniejsza złożoność komunikacyjną algorytmu z $ O(n^2) $ w oryginalnym podejściu do $ O(n) $ (a
+dokładniej $ O(2n) $) w przypadku optymistycznym, gdy komunikat \texttt{StayingAlive} dotrze przed
+zakładanym czasem. Oczywiście w przypadku pesymistycznym, tj.\ gdy węzeł dokonujący rozgłaszania ulega w jego trakcie awarii lub komunikaty \texttt{StayingAlive} z jakiegoś powodu nie dotrą do odbiorców złożoność wynosi nadal $ O(n^2) $. Mimo to, w ogólnym rozrachunku powala ona znacząco zmniejszyć ilość komunikatów w systemie.
 
 \begin{figure}[h!]
     \includegraphics[width=\linewidth]{images/04-FIFO_RRB.png}
@@ -126,26 +174,40 @@ Na rysunku \ref{figure:systemdescription_fifo_rrb} została przedstawiona sytuac
 
 Zadanie ustalenia jaka wartość określonego klucza jest zgodna z modelem spójności przyczynowej bądź sekwencyjnej wymaga prześledzenia zależności przyczynowych pomiędzy operacjami zapisu mającymi miejsce w systemie. Oczywiście w lokalnym buforze entropii może istnieć wiele operacji zapisu dotyczących określonego klucza, jednak należy wybrać tę, która jest najświeższa (w rozumieniu definicji porządku przyczynowego z rozdziału \ref{chapter:replication}), a jednocześnie entropia zawiera jej pełen prefiks przyczynowy, tak aby kolejne odczyty zwracały wartość co najmniej tak samo świeżą jak poprzednie.
 
-W celu realizacji wyżej postawionego zadania, każda wiadomość dotycząca operacji zapisu w systemie otrzymuje swój własny, unikalny zegar wektorowy, który jest następnie przesyłany zawsze w parze z tą wiadomością. Dzięki możliwości porównywania wartości zegarów wektorowych dwóch różnych wiadomości $ m_1 $, $ m_2 $ możliwe jest jednoznaczne stwierdzenie, że np. operacja zapisu zawarta w wiadomości $ m_1 $ zależy przyczynowo od operacji zapisu zawartej w wiadomości $ m_2 $ albo na odwrót, lub też, że obie operacje są zdarzeniami niezależnymi. W tym miejscu należy dokładnie określić, co rozumiane jest pod pojęciem zegarów wektorowych.
+W celu realizacji wyżej postawionego zadania, każda wiadomość dotycząca operacji zapisu w systemie
+otrzymuje swój własny, unikalny zegar wektorowy, który jest następnie przesyłany zawsze w parze z tą
+wiadomością. Dzięki możliwości porównywania wartości zegarów wektorowych dwóch różnych wiadomości $
+m_1 $, $ m_2 $ możliwe jest jednoznaczne stwierdzenie, że np.\ operacja zapisu zawarta w wiadomości $ m_1 $ zależy przyczynowo od operacji zapisu zawartej w wiadomości $ m_2 $ albo na odwrót, lub też, że obie operacje są zdarzeniami niezależnymi. W tym miejscu należy dokładnie określić, co rozumiane jest pod pojęciem zegarów wektorowych.
 
 \subsubsection{Zegary logiczne}
 
-% [MB] Przydałby się przypis
-
-\textit{Zegarem logicznym} systemu rozproszonego nazywamy funkcję $ \mathcal{T}: \Lambda \rightarrow \mathcal{Y} $, odwzorowującą zbiór zdarzeń $ \Lambda $ w zbiór uporządkowany $ \mathcal{Y} $, taką że:
+Pojęcie zegara logicznego zostało wyjaśnione m. in. w artykule \cite{Lamport:1978:TCO:359545.359563}. Zegarem logicznym systemu rozproszonego nazywamy funkcję $ \mathcal{T}: \Lambda \rightarrow \mathcal{Y} $, odwzorowującą zbiór zdarzeń $ \Lambda $ w zbiór uporządkowany $ \mathcal{Y} $, taką że:
 \begin{align*}
     (E \mapsto E') \Rightarrow (T(E) < T(E'))    
 \end{align*}
 gdzie < jest relacją porządku na zbiorze $ \mathcal{Y} $.
 
-\textit{Zegarem wektorowym} nazywamy z kolei zegar logiczny, dla którego przeciwdziedzina funkcji $ \mathcal{T} $, oznaczana dalej dla odróżnienia przez $ \mathcal{T}^V $, jest zbiorem n-elementowych wektorów liczb naturalnych lub rzeczywistych. Oznacza to, że w systemie składającym się z n serwerów, każdy zegar wektorowy będzie zawierał n pozycji, gdzie każda z nich odpowiadać będzie dokładnie jednemu serwerowi. Dodatkowo, wartość na n-tej pozycji zegara logicznego oznacza wartość czasu wirtualnego, o którego upływie był świadomy serwer nadający wiadomości zegar wektorowy w odniesieniu do n-tego serwera systemu.
+Zegarem wektorowym nazywamy z kolei zegar logiczny, dla którego przeciwdziedzina funkcji $ \mathcal{T} $, oznaczana dalej dla odróżnienia przez $ \mathcal{T}^V $, jest zbiorem n-elementowych wektorów liczb naturalnych lub rzeczywistych. Oznacza to, że w systemie składającym się z n serwerów, każdy zegar wektorowy będzie zawierał n pozycji, gdzie każda z nich odpowiadać będzie dokładnie jednemu serwerowi. Dodatkowo, wartość na n-tej pozycji zegara logicznego oznacza wartość czasu wirtualnego, o którego upływie był świadomy serwer nadający wiadomości zegar wektorowy w odniesieniu do n-tego serwera systemu.
 
 \subsection{Sekwencjonowanie i materializacja danych} \label{section:materialization}
 
-% [MB] tytuł "Materializacja danych" lub "Sekwencjonowanie i materializacja danych". Wydaje mi się, że pojęcia "materializacja" i "sekwencjonowanie" (lub podobne) powinny być używane w taki sposób, jak w implementacji, tzn. materializacja - faktyczny zapis wartości do trwałego nośnika, sekwencjonowanie - proces nadawania numerów sekwencyjnych.
+% [MB] tytuł "Materializacja danych" lub "Sekwencjonowanie i materializacja danych". Wydaje mi się,
+% że pojęcia "materializacja" i "sekwencjonowanie" (lub podobne) powinny być używane w taki sposób,
+% jak w implementacji, tzn.\ materializacja - faktyczny zapis wartości do trwałego nośnika, sekwencjonowanie - proces nadawania numerów sekwencyjnych.
 % [BK] poprawiłem nazewnictwo
 
-Sekwencjonowanie jako proces zachodzący w systemie zostało już wspomniane wcześniej w niniejszym rozdziale. Odpowiada ono za nadawanie kolejnych numerów sekwencyjnych operacjom zapisu nadchodzącym do systemu, tj. dokonuje ich globalnego uszeregowania, zachowując jednocześnie porządek przyczynowy operacji. Przeprowadzaniem procesu sekwencjonowania zajmuje się jeden, wyróżniony serwer, zwany \textit{sekwencerem}. Ważne jest, aby w całym systemie (przy obecnej implementacji) istniał dokładnie jeden taki proces. Jeśli żaden z serwerów nie będzie pełnił roli sekwencera, to lokalne bufory entropii będą rosnąć, a dane nigdy nie osiągną spójności sekwencyjnej oraz nie zostaną zapisane do używanej wewnętrznie bazy danych. Jeśli z kolei nada się rolę sekwencera więcej niż jednemu serwerowi, wówczas przechowywane dane będą mogły stać się z czasem niespójne, ze względu na inne uszeregowanie zapisów generowane przez poszczególne sekwencery. Z powyższego wynika bezpośrednio problem, o którym szerzej traktuje sekcja \ref{subsection:sequencerfailures} rozdziału poświęconemu szczegółom implementacyjnym, tj. sekwencer jest newralgicznym punktem systemu, a od jego prawidłowej pracy zależy postęp całego przetwarzania, ponieważ tylko on może decydować o przejściu danych na poziom spójności sekwencyjnej.
+Sekwencjonowanie jako proces zachodzący w systemie zostało już wspomniane wcześniej w niniejszym
+rozdziale. Odpowiada ono za nadawanie kolejnych numerów sekwencyjnych operacjom zapisu nadchodzącym
+do systemu, tj.\ dokonuje ich globalnego uszeregowania, zachowując jednocześnie porządek przyczynowy
+operacji. Przeprowadzaniem procesu sekwencjonowania zajmuje się jeden, wyróżniony serwer, zwany
+\textit{sekwencerem}. Ważne jest, aby w całym systemie (przy obecnej implementacji) istniał
+dokładnie jeden taki proces. Jeśli żaden z serwerów nie będzie pełnił roli sekwencera, to lokalne
+bufory entropii będą rosnąć, a dane nigdy nie osiągną spójności sekwencyjnej oraz nie zostaną
+zapisane do używanej wewnętrznie bazy danych. Jeśli z kolei nada się rolę sekwencera więcej niż
+jednemu serwerowi, wówczas przechowywane dane będą mogły stać się z czasem niespójne, ze względu na
+inne uszeregowanie zapisów generowane przez poszczególne sekwencery. Z powyższego wynika
+bezpośrednio problem, o którym szerzej traktuje sekcja \ref{subsection:sequencerfailures} rozdziału
+poświęconemu szczegółom implementacyjnym, tj.\ sekwencer jest newralgicznym punktem systemu, a od jego prawidłowej pracy zależy postęp całego przetwarzania, ponieważ tylko on może decydować o przejściu danych na poziom spójności sekwencyjnej.
 
 \subsubsection*{Pseudokod procedury sekwencjonowania}
 
@@ -156,7 +218,7 @@ Zostaną teraz przedstawione pseudokody procedur obsługi wiadomości związanyc
     \item \texttt{can\_be\_delivered(MESSAGE, MATERIALIZE\_VC)} - procedura zwracająca odpowiedź prawda lub fałsz w zależności od tego, czy wiadomość MESSAGE może być już dostarczona przy założeniu, że wartość lokalnego zegara wektorowego zawarta jest w \texttt{MATERIALIZE\_VC}
     \item \texttt{synchronize} - operacja przepisania pozycji o większych wartościach z dwóch zegarów wektorowych, wynikiem jest nowy zegar wektorowy
     \item \texttt{broadcast} - operacja zgodnego rozgłaszania niezawodnego z zachowaniem porządku FIFO
-    \item \texttt{copy} - operacja tworząca głęboką kopię danego obiektu (ang. \texttt{deep copy})
+    \item \texttt{copy} - operacja tworząca głęboką kopię danego obiektu (ang.\ \texttt{deep copy})
     \item \texttt{LAST\_MATERIALIZED\_SEQ\_NO} - numer ostatnio nadanego numeru sekwencyjnego
     \item \texttt{LAST\_MATERIALIZED\_CACHE\_NO} - numery sekwencyjne ostatnio nadawane operacjom aktualizacji w odniesieniu do poszczególnych kluczy
     \item \texttt{SEQUENCED\_MESSAGES\_VC} - bufor nadanych przez sekwencer numerów sekwencyjnych dla wiadomości, które nie mogą być jednak w danej chwili zmaterializowane na bieżącym węźle
@@ -274,12 +336,13 @@ begin
     save MESSAGE to backend
     LAST_MATERIALIZED_SEQ_NO := SEQ_NO
     LAST_MATERIALIZED_CACHE_NO(KEY) := CACHE_NO
-    ENTROPY $ \textbackslash $= MESSAGE
-    SEQUENCED_MESSAGES_VC $ \textbackslash $= (VC, SEQ_NO, CACHE_NO, KEY)
+    ENTROPY $ \backslash $= MESSAGE
+    SEQUENCED_MESSAGES_VC $ \backslash $= (VC, SEQ_NO, CACHE_NO, KEY)
 end
 \end{lstlisting}
 
-Procedura \texttt{materialize} dokonuje właściwej materializacji danych w wewnętrznie używanej przez system bazie danych (ang. \textit{backend}). Najpierw zapisuje uaktualnienie danych zawarte w wiadomości \texttt{MESSAGE} do bazy danych. Następnie następuje aktualizacja wartości numeru sekwencyjnego ostatnio materializowanej wiadomości: globalnego oraz w odniesieniu do konkretnego klucza. Wiadomość \texttt{MESSAGE} jest usuwana z lokalnego bufora entropii, a ze zbioru \texttt{SEQUENCED\_MESSAGES\_VC} usuwa się informację o numerze sekwencyjnym dla unikalnej wartości zegara wektorowego \texttt{VC}.
+Procedura \texttt{materialize} dokonuje właściwej materializacji danych w wewnętrznie używanej przez
+system bazie danych (ang.\ \textit{backend}). Najpierw zapisuje uaktualnienie danych zawarte w wiadomości \texttt{MESSAGE} do bazy danych. Następnie następuje aktualizacja wartości numeru sekwencyjnego ostatnio materializowanej wiadomości: globalnego oraz w odniesieniu do konkretnego klucza. Wiadomość \texttt{MESSAGE} jest usuwana z lokalnego bufora entropii, a ze zbioru \texttt{SEQUENCED\_MESSAGES\_VC} usuwa się informację o numerze sekwencyjnym dla unikalnej wartości zegara wektorowego \texttt{VC}.
 
 % TODO przykłady dla cache, causal i pram
 \subsection{Konstrukcja wartości zgodnych z poszczególnymi modelami danocentrycznymi} \label{section:value_construction}
@@ -288,7 +351,8 @@ Kiedy do serwera przychodzi żądanie pobrania wartości zgodnej z określonym m
 
 \subsubsection{Spójność sekwencyjna}
 
-W przypadku żądania pobrania danych spójnych sekwencyjnie pod określonym kluczem, serwer odpytuje wewnętrzną bazę danych (ang. \textit{backend}) i podaje użytkownikowi w odpowiedzi to, co samemu otrzymał z bazy danych. Może to być konkretna wartość lub wartość specjalna \texttt{None}, oznaczająca, że podany klucz nie istnieje w bazie danych odpytywanego serwera.
+W przypadku żądania pobrania danych spójnych sekwencyjnie pod określonym kluczem, serwer odpytuje
+wewnętrzną bazę danych (ang.\ \textit{backend}) i podaje użytkownikowi w odpowiedzi to, co samemu otrzymał z bazy danych. Może to być konkretna wartość lub wartość specjalna \texttt{None}, oznaczająca, że podany klucz nie istnieje w bazie danych odpytywanego serwera.
 
 W przypadku, w którym konstruując odpowiedź dla modelu spójności podręcznej, przyczynowej lub PRAM okaże się, że serwer nie jest w stanie podać konkretnej wartości, następuje automatyczne pobranie wartości spójnej sekwencyjnie --- także wtedy, gdy bufor entropii jest pusty (bowiem wartość spójna sekwencyjnie spełnia także wszystkie wymienione warunki spójności).
 
@@ -320,9 +384,7 @@ Kolejne proponowane rozwiązanie to protokół korzystający z wektorów wersji 
 
 \subsubsection{Wektory wersji} \label{subsection:version_vector}
 
-% [MB] Przypis na temat wektorów wersji
-
-\textit{Wektorem wersji} nazywamy sekwencję liczb, z których każda odpowiada zarejestrowanej liczbie zapisów wykonanych na serwerze związanym z pozycją tej liczby w wektorze wersji. Koncepcyjnie są one oparte na idei zegarów wektorowych, zapewniając (tak jak zegary wektorowe) unikalną identyfikację zapisów w systemie. Zastępują one zbiory operacji używane w protokole logicznym, umożliwiając efektywną reprezentację wymagań dotyczących przeprowadzanej w systemie operacji. W przypadku proponowanego systemu w roli wektorów wersji zostały użyte zegary wektorowe - informacja w nich zawarta jest tożsama z wektorem wersji, ponadto zegary wektorowe zostały zaimplementowane w pierwszej kolejności dla śledzenia zależności przyczynowych pomiędzy operacjami zapisu w systemie. Ich ponowne wykorzystanie było więc naturalną decyzją.
+Wektorem wersji nazywamy sekwencję liczb, z których każda odpowiada zarejestrowanej liczbie zapisów wykonanych na serwerze związanym z pozycją tej liczby w wektorze wersji. Koncepcyjnie są one oparte na idei zegarów wektorowych, zapewniając (tak jak zegary wektorowe) unikalną identyfikację zapisów w systemie. Formalną definicję pojęcia wektora wersji zawarto w artykule \cite{10.1109/TSE.1983.236733}. Zastępują one zbiory operacji używane w protokole logicznym, umożliwiając efektywną reprezentację wymagań dotyczących przeprowadzanej w systemie operacji. W przypadku proponowanego systemu w roli wektorów wersji zostały użyte zegary wektorowe - informacja w nich zawarta jest tożsama z wektorem wersji, ponadto zegary wektorowe zostały zaimplementowane w pierwszej kolejności dla śledzenia zależności przyczynowych pomiędzy operacjami zapisu w systemie. Ich ponowne wykorzystanie było więc naturalną decyzją.
 
 Formalnie, można zapisać wektor wersji w następujący sposób:
 \begin{align*}
@@ -419,6 +481,7 @@ gdzie $ v_i $ oznacza liczbę zapisów wykonanych na obiekcie $ x_i $, a $ N_O $
 
 Istotą tego protokołu jest zapewnienie, że operacje wykonywane na tych samych obiektach muszą być globalnie uporządkowane dla zachowania unikalności wektorów wersji.
 
-\section{Zagadnienie podziału danych (ang. \textit{sharding})}
+\section{Zagadnienie podziału danych (ang.\ \textit{sharding})}
 
-Wiele współczesnych rozproszonych baz danych oferuje możliwość korzystania z mechanizmu \textit{shardingu} danych, tj. podziału przechowywanych danych pomiędzy węzły. Dzięki temu rozwiązaniu węzły nie przechowują kopii całego zbioru danych, ale tylko wybrane jego części, co z kolei ułatwia skalowanie bazy danych. Mechanizm ten obecny jest więc w systemach o budowie podobnej do rozwiązania proponowanego w niniejszej pracy, mógłby być zatem zaimplementowany także w nim, aby każdy z serwerów przechowywał wartości tylko części kluczy. Zagadnienie to stanowi odrębny obszar problematyki replikacji danych, mogący rodzić nowe problemy związane z zachowaniem spójności bazy danych oraz wymagający rozwiązań implementacyjnych w zakresie dostępu do danych (nie będących już dostępnymi na każdym węźle). Niniejsza praca skupia się z kolei na umożliwieniu dostępu do danych z określonym poziomem spójności, co jest osobnym zagadnieniem oraz stanowi powód, dla którego zagadnienie to pozostawiono otwartym w proponowanym systemie. Aktualna implementacja nie wspiera podziału danych pomiędzy węzły, natomiast nie blokuje możliwości późniejszego rozwijania systemu właśnie w tym kierunku.
+Wiele współczesnych rozproszonych baz danych oferuje możliwość korzystania z mechanizmu
+\textit{shardingu} danych, tj.\ podziału przechowywanych danych pomiędzy węzły. Dzięki temu rozwiązaniu węzły nie przechowują kopii całego zbioru danych, ale tylko wybrane jego części, co z kolei ułatwia skalowanie bazy danych. Mechanizm ten obecny jest więc w systemach o budowie podobnej do rozwiązania proponowanego w niniejszej pracy, mógłby być zatem zaimplementowany także w nim, aby każdy z serwerów przechowywał wartości tylko części kluczy. Zagadnienie to stanowi odrębny obszar problematyki replikacji danych, mogący rodzić nowe problemy związane z zachowaniem spójności bazy danych oraz wymagający rozwiązań implementacyjnych w zakresie dostępu do danych (nie będących już dostępnymi na każdym węźle). Niniejsza praca skupia się z kolei na umożliwieniu dostępu do danych z określonym poziomem spójności, co jest osobnym zagadnieniem oraz stanowi powód, dla którego zagadnienie to pozostawiono otwartym w proponowanym systemie. Aktualna implementacja nie wspiera podziału danych pomiędzy węzły, natomiast nie blokuje możliwości późniejszego rozwijania systemu właśnie w tym kierunku.

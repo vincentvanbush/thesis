@@ -20,7 +20,9 @@ Drugim elementem jest zbiór procesów rozproszonych $ \mathcal{P} $, składają
 
 Wyróżniamy systemy rozproszone synchroniczne i asynchroniczne. Niniejsza praca zakłada istnienie systemu asynchronicznego, co oznacza, że poszczególne węzły wykonują operacje z różnymi prędkościami w takt niezależnych zegarów, a czas transmisji wiadomości jest skończony lecz nieznany.
 
-Należy zaznaczyć również, że rozpatrujemy model systemu w topologii kliki, co oznacza, że każdy węzeł systemu posiada bezpośrednie połączenie z każdym innym węzłem. W niniejszej pracy dodatkowo zakładamy dostępność niezawodnych kanałów typu FIFO (ang. \textit{first in, first out}), z powodów opisanych w rozdziale dotyczącym implementacji proponowanego systemu składowania danych.
+Należy zaznaczyć również, że rozpatrujemy model systemu w topologii kliki, co oznacza, że każdy
+węzeł systemu posiada bezpośrednie połączenie z każdym innym węzłem. W niniejszej pracy dodatkowo
+zakładamy dostępność niezawodnych kanałów typu FIFO (ang.\ \textit{first in, first out}), z powodów opisanych w rozdziale dotyczącym implementacji proponowanego systemu składowania danych.
 
 \section{Pojęcie replikacji}
 
@@ -52,8 +54,8 @@ Niniejsza praca zakłada istnienie systemu rozproszonego, zgodnie z założeniam
 \end{itemize}
 Realizacja każdej z tych operacji przebiega w dwóch fazach:
 \begin{itemize}
-    \item żądanie operacji (ang. \textit{operation issue})
-    \item wykonanie operacji (ang. \textit{operation execution})
+    \item żądanie operacji (ang.\ \textit{operation issue})
+    \item wykonanie operacji (ang.\ \textit{operation execution})
 \end{itemize}
 Osobne oznaczenia wprowadzono także dla rozróżnienia zbiorów operacji wykonanych w systemie:
 \begin{itemize}
@@ -84,7 +86,7 @@ Warunek pierwszy mówi o tym, że lokalne uporządkowanie operacji wykonywanych 
 
 \subsubsection{Uszeregowanie legalne}
 
-Nie wszystkie uszeregowania operacji wykonanych w systemie rozproszonym są poprawne, tj. możliwe do zrealizowania w praktyce. Od tej chwili rozważane będą jedynie \textit{uszeregowania legalne}, zdefiniowane w sposób następujący:
+Nie wszystkie uszeregowania operacji wykonanych w systemie rozproszonym są poprawne, tj.\ możliwe do zrealizowania w praktyce. Od tej chwili rozważane będą jedynie \textit{uszeregowania legalne}, zdefiniowane w sposób następujący:
 
 Uszeregowanie $ \mapsto_i $ jest legalne $ \Leftrightarrow $
 \begin{align*}
@@ -127,7 +129,7 @@ Model ten wymaga, aby lokalne uporządkowanie operacji było zachowane w obrazie
     \forall_{w_1, w_2 \in OW} &(\forall_{i = 1..n} w_1 \mapsto_i w_2 \vee \forall_{i = 1..n} w_2 \mapsto_i w_1)
 \end{align*}
 
-Powyższe warunki muszą być spełnione dla obrazów $ hv $ historii $ h $ w każdym z procesów biorących udział w przetwarzaniu. Poniższy rysunek przedstawia przetwarzanie w systemie gwarantującym zachowanie spójności sekwencyjnej.
+W innych słowach powyższa definicja została ujęta w pozycji \cite{adve:90b}, tj. "wynik każdego wykonania w systemie zachowującym spójność sekwencyjną jest taki sam jak gdyby wszystkie operacje z tego przetwarzania wykonać w pewnej, ściśle określonej sekwencji kroków, a operacje wykonane przez każdy z poszczególnych węzłów znajdują się w tej sekwencji w tym samym porządku". Powyższe warunki muszą być spełnione dla obrazów $ hv $ historii $ h $ w każdym z procesów biorących udział w przetwarzaniu. Poniższy rysunek przedstawia przetwarzanie w systemie gwarantującym zachowanie spójności sekwencyjnej.
 
 \begin{figure}
     \includegraphics[width=\linewidth]{images/02-sequential.png}
@@ -143,11 +145,11 @@ Obrazy historii w poszczególnych procesach wyglądają następująco:
     hv_3&: w_1(x)1 \rightarrow w_2(x)3 \rightarrow r_3(x)3 \rightarrow w_1(x)2
 \end{align*}
 
-Zwróćmy uwagę na fakt, że kolejność wykonywania zapisów jest każdym procesie taka sama, tj. $ w_1(x)1 \rightarrow w_2(x)3 \rightarrow w_1(x)2 $, a także, że kolejność ta jest zdeterminowana przez legalność uszeregowania w procesie $ P_2 $, dokonującym dwóch odczytów. Zauważmy, że aby zachować legalność uszeregowania w tym procesie odczyt $ r_2(x)1 $ musi następować po zapisie $ w_1(x)1 $ oraz przed zapisem $ w_2(x)3 $. Z kolei odczyt $ r_2(x)2 $, występujący po zapisie $ w_2(x)3 $ musi występować po zapisie $ w_1(x)2 $. Można więc powiedzieć, że proces $ P_2 $ dokonuje globalnego uszeregowania operacji zapisów w tym przypadku.
+Zwróćmy uwagę na fakt, że kolejność wykonywania zapisów jest każdym procesie taka sama, tj.\ $ w_1(x)1 \rightarrow w_2(x)3 \rightarrow w_1(x)2 $, a także, że kolejność ta jest zdeterminowana przez legalność uszeregowania w procesie $ P_2 $, dokonującym dwóch odczytów. Zauważmy, że aby zachować legalność uszeregowania w tym procesie odczyt $ r_2(x)1 $ musi następować po zapisie $ w_1(x)1 $ oraz przed zapisem $ w_2(x)3 $. Z kolei odczyt $ r_2(x)2 $, występujący po zapisie $ w_2(x)3 $ musi występować po zapisie $ w_1(x)2 $. Można więc powiedzieć, że proces $ P_2 $ dokonuje globalnego uszeregowania operacji zapisów w tym przypadku.
 
 \subsubsection{Model spójności przyczynowej}
 
-Model ten wymaga zachowania porządku przyczynowego operacji, tak jak zdefiniowany został w sekcji \ref{section:causal_order}. Jeśli operacja $ o_2 $ zależy przyczynowo od operacji $ o_1 $, to każdy z procesów musi wykonać operację $ o_1 $ przed wykonaniem operacji $ o_2 $, co formalnie zapisujemy:
+Model ten wymaga zachowania porządku przyczynowego operacji, tak jak zdefiniowany został w sekcji \ref{section:causal_order}. Dokładne omówienie modelu przyczynowego można znaleźć także w publikacji \cite{ahamad:95}. Jeśli operacja $ o_2 $ zależy przyczynowo od operacji $ o_1 $, to każdy z procesów musi wykonać operację $ o_1 $ przed wykonaniem operacji $ o_2 $, co formalnie zapisujemy:
 \begin{align*}
     \forall_{o_1, o_2 \in O_i \cup OW} (o_1 \rightarrow o_2 \Rightarrow o_1 \mapsto_i o_2)
 \end{align*}
@@ -171,8 +173,8 @@ Obrazy historii w poszczególnych procesach w przykładzie z rysunku \ref{figure
 Zauważmy, że wśród zbioru operacji zapisu w systemie $ w_1(x)1 $ oraz $ w_3(x)2 $ są niezależne, natomiast operacja $ w_2(x)3 $ przyczynowo zależy zarówno od operacji $ w_1(x)1 $ jak i od $ w_3(x)2 $. Rzeczywiście, operacje $ w_1(x)1 $ oraz $ w_3(x)2 $ widziane są w obrazach historii w różnej kolejności, natomiast operacja $ w_2(x)3 $ zawsze występuje po obu wspominanych uprzednio operacjach.
 
 \subsubsection{Model spójności PRAM}
-% [MB] może "zapewnia zachowanie porządku zlecania operacji"?
-Model spójności PRAM (\textit{ang. piplined RAM}) zapewnia zachowanie porządku zlecania operacji przez proces $ P_i \in P $ w obrazie historii każdego innego procesu. W sposób formalny powyższy warunek można zapisać następująco:
+
+Model spójności PRAM (\textit{ang.\ piplined RAM}) zapewnia zachowanie porządku zlecania operacji przez proces $ P_i \in P $ w obrazie historii każdego innego procesu. W sposób formalny powyższy warunek można zapisać następująco:
 \begin{align*}
     \forall_{o_1, o_2 \in O_i \cup OW} ((\exists_{j=1..n} o_1 \rightarrow o_2) \Rightarrow o_1 \mapsto_i o_2)
 \end{align*}
@@ -193,11 +195,13 @@ Obrazy historii w poszczególnych procesach w przykładzie z rysunku \ref{figure
 
 Przykład przetwarzania w systemie zachowującym model PRAM został przedstawiony na rysunku \ref{figure:replication_pram}.
 
-Należy zwrócić uwagę na to, że jedyne ograniczenia na lokalne obrazy historii jakie nakłada model spójności PRAM to w tym przypadku konieczność, aby operacja $ w_1(x)1 $ poprzedzała $ w_1(x)2 $ oraz aby operacja $ w_3(x)3 $ poprzedzała $ w_3(x)4 $, tzn. aby lokalne porządki wykonywania operacji w procesach $ P_1 $ i $ P_3 $ były zachowane w każdym procesie $ P_i \in P $.
+Należy zwrócić uwagę na to, że jedyne ograniczenia na lokalne obrazy historii jakie nakłada model
+spójności PRAM to w tym przypadku konieczność, aby operacja $ w_1(x)1 $ poprzedzała $ w_1(x)2 $ oraz
+aby operacja $ w_3(x)3 $ poprzedzała $ w_3(x)4 $, tzn.\ aby lokalne porządki wykonywania operacji w procesach $ P_1 $ i $ P_3 $ były zachowane w każdym procesie $ P_i \in P $. Więcej na temat tego modelu spójności można przeczytać w pozycji \cite{lipton:88}.
 
 \subsubsection{Model spójności podręcznej}
 
-Kolejny omawiany model spójności, tj. model spójności podręcznej, nazywany także modelem \textit{cache}, wymaga globalnego uporządkowania zapisów, ale tylko w odniesieniu do poszczególnych zmiennych. Innymi słowy, model ten nakłada ograniczenie, aby zapisy dotyczące zmiennej $ x \in X $ odbywały się w tej samej kolejności w całym systemie, jednak w przypadku zapisów do różnych zmiennych nie jest wymagane nawet zachowanie lokalnego uporządkowania operacji, model spójności podręcznej nie nakłada w takim przypadku żadnych ograniczeń. Formalnie powyższe stwierdzenie możemy zapisać w ten sposób:
+Kolejny omawiany model spójności, tj.\ model spójności podręcznej, nazywany także modelem \textit{cache}, wymaga globalnego uporządkowania zapisów, ale tylko w odniesieniu do poszczególnych zmiennych. Innymi słowy, model ten nakłada ograniczenie, aby zapisy dotyczące zmiennej $ x \in X $ odbywały się w tej samej kolejności w całym systemie, jednak w przypadku zapisów do różnych zmiennych nie jest wymagane nawet zachowanie lokalnego uporządkowania operacji, model spójności podręcznej nie nakłada w takim przypadku żadnych ograniczeń. Formalnie powyższe stwierdzenie możemy zapisać w ten sposób:
 \begin{align*}
     \forall_{x \in X} \forall_{w_1, w_2 \in OW \cap O|_x} (\forall_{i=1..n} w_1 \mapsto_i w_2 \vee \forall_{i=1..n} w_2 \mapsto_i w_1)
 \end{align*}
@@ -227,7 +231,7 @@ Warto wspomnieć także o istnieniu modelu spójności procesorowej. Nie wprowad
     \forall_{x \in X} \forall_{w_1, w_2 \in OW \cap O|_x} &(\forall_{i=1..n} w_1 \mapsto_i w_2 \vee \forall_{i=1..n} w_2 \mapsto_i w_1)
 \end{align*}
 
-Oczywiście zachowując model spójności procesorowej, gwarantujemy jednocześnie zachowanie zarówno modelu PRAM, jak i modeku spójności podręcznej. Przykładowe przetwarzanie w systemie zachowującym spójność procesorową zostało zobrazowane na rysunku \ref{figure:replication_cpu}.
+Pracą poświęconą w dużej części tematyce spójności procesorowej jest m.in.\ \cite{ahamad:93}. Oczywiście zachowując model spójności procesorowej, gwarantujemy jednocześnie zachowanie zarówno modelu PRAM, jak i modeku spójności podręcznej. Przykładowe przetwarzanie w systemie zachowującym spójność procesorową zostało zobrazowane na rysunku \ref{figure:replication_cpu}.
 
 \begin{figure}
     \includegraphics[width=\linewidth]{images/02-cpu.png}
@@ -246,10 +250,15 @@ Zauważmy, że zarówno lokalny porządek wykonywania operacji w każdym z proce
 
 \subsubsection{Relacje pomiędzy danocentrycznymi modelami spójności}
 
-Jak można łatwo zauważyć, przedstawione powyżej modele spójności nie są od siebie niezależne. Opisywany w poprzednim punkcie model procesorowy jest złożeniem modeli: PRAM i spójności podręcznej, jest więc od obu silniejszy. Nie jest to jednak jedyna zależność pomiędzy przedstawionymi modelami. Można wykazać, choć dowody te nie mieszczą się w zakresie niniejszej pracy, że najsilniejszym z przedstawionych modeli jest model sekwencyjny, tj. system gwarantujący zachowanie tego modelu w trakcie przetwarzania danych, gwarantuje jednocześnie zachowanie wszystkich innych modeli spójności. Model przyczynowy oraz procesorowy są od siebie niezależne, model PRAM jest słabszy zarówno od modelu przyczynowego, jak i procesorowego natomiast model spójności podręcznej jest słabszy od modelu sekwencyjnego i procesorowego oraz niezależny od pozostałych modeli. Sytuację tę obrazuje rysunek \ref{figure:replication_relations}.
+Jak można łatwo zauważyć, przedstawione powyżej modele spójności nie są od siebie niezależne.
+Opisywany w poprzednim punkcie model procesorowy jest złożeniem modeli: PRAM i spójności podręcznej,
+jest więc od obu silniejszy. Nie jest to jednak jedyna zależność pomiędzy przedstawionymi modelami.
+Można wykazać, choć dowody te nie mieszczą się w zakresie niniejszej pracy, że najsilniejszym z
+przedstawionych modeli jest model sekwencyjny, tj.\ system gwarantujący zachowanie tego modelu w trakcie przetwarzania danych, gwarantuje jednocześnie zachowanie wszystkich innych modeli spójności. Model przyczynowy oraz procesorowy są od siebie niezależne, model PRAM jest słabszy zarówno od modelu przyczynowego, jak i procesorowego natomiast model spójności podręcznej jest słabszy od modelu sekwencyjnego i procesorowego oraz niezależny od pozostałych modeli. Sytuację tę obrazuje rysunek \ref{figure:replication_relations}.
 
 \begin{figure}[H]
-    \includegraphics[width=\linewidth]{images/02-relations.png}
+    \includegraphics[scale=0.45]{images/02-relations.png}
+    \centering
     \caption{Relacje zachodzące pomiędzy różnymi modelami spójności}
     \label{figure:replication_relations}
 \end{figure}
@@ -258,7 +267,7 @@ Na powyższym rysunku zawieranie się prostokąta w innym oznacza, że odpowiada
 
 \subsection{Modele klientocentryczne} \label{subsection:clientcentric}
 
-Grupa modeli spójności klientocentrycznych, zwanych niekiedy gwarancjami sesji, obejmuje modele zapewniające pewne gwarancje klientowi odpytującego serwery o pewne dane, podczas jego interakcji z systemem (sesji). Zauważmy, że w przypadku poprednio omawianych modeli danocentrycznych nie było rozróżnienia na klientów i serwery, zakładały one, że procesy odwołujące się do rozproszonych danych są związane na stałe z jednym serwerem i nie przemieszczają się w czasie przetwarzania. Często jednak chcemy dopuścić możliwość separacji procesu aplikacyjnego od podsystemu zarządzania pamięcią, wówczas kolejne żądania do systemu mogą trafiać do innych serwerów ze względu na przemieszczanie się klienta, wykonującego te żądania. W takim przypadku potrzebujemy gwarancji innego rodzaju, a mianowicie takich, które respektują, że kolejne żądania jednego klienta do (potencjalnie) różnych serwerów nie są od siebie całkowicie niezależne. Dokładnie taka idea stoi za omawianymi w tym podrozdziale modelami klientocentrycznymi.
+Grupa modeli spójności klientocentrycznych, zwanych niekiedy gwarancjami sesji, obejmuje modele zapewniające pewne gwarancje klientowi odpytującego serwery o pewne dane, podczas jego interakcji z systemem (sesji). Zauważmy, że w przypadku poprednio omawianych modeli danocentrycznych nie było rozróżnienia na klientów i serwery, zakładały one, że procesy odwołujące się do rozproszonych danych są związane na stałe z jednym serwerem i nie przemieszczają się w czasie przetwarzania. Często jednak chcemy dopuścić możliwość separacji procesu aplikacyjnego od podsystemu zarządzania pamięcią, wówczas kolejne żądania do systemu mogą trafiać do innych serwerów ze względu na przemieszczanie się klienta, wykonującego te żądania. W takim przypadku potrzebujemy gwarancji innego rodzaju, a mianowicie takich, które respektują, że kolejne żądania jednego klienta do (potencjalnie) różnych serwerów nie są od siebie całkowicie niezależne. Dokładnie taka idea stoi za omawianymi w tym podrozdziale modelami klientocentrycznymi. Podane w bieżącej sekcji informacje nt.\ modeli spójności nastawionych na dane oraz sposoby ich uzyskania w środowisku rozproszonym dostępne są także w publikacji \cite{TDP+94}.
 
 Dla lepszego zilustrowania znaczenia gwarancji wprowadzanych przez kolejne modele klientocentryczne, zamieszczony został poniżej rysunek \ref{figure:replication_sess_gu}. Następne podrozdziały będą odwoływały się do tego właśnie rysunku w kontekście prezentowanych przez nie klientocentrycznych modeli spójności.
 
@@ -281,7 +290,7 @@ Zanim zostaną przedstawione poszczególne modele klientocentryczne, należy wym
     \item $ \xrightarrow{S_j} $ porządek operacji wykonywanych przez serwer $ S_j $
 \end{itemize}
 
-Należy w tym miejscu wprowadzić także definicję tzw. \textbf{zapisów odnośnych} (ang. \textit{relevant writes}). Skrót $ RW(r) $ oznacza zbiór zapisów, których wykonanie miało bezpośredni wpływ na wynik operacji odczytu $ r $.
+Należy w tym miejscu wprowadzić także definicję tzw.\ \textbf{zapisów odnośnych} (ang.\ \textit{relevant writes}). Skrót $ RW(r) $ oznacza zbiór zapisów, których wykonanie miało bezpośredni wpływ na wynik operacji odczytu $ r $.
 
 \subsubsection{Read Your Writes}
 
@@ -298,7 +307,7 @@ Odczyty $ r_2(x)0 $ oraz $ r_2(x)3 $ klienta drugiego nie są poprzedzone żadny
 
 \subsubsection{Monotonic Writes}
 
-Gwarancja \textbf{monotonicznych zapisów} (ang. \textit{Monotonic Writes}) oznacza, że kolejne zapisy klienta będą aplikowane na wszystkich serwerach w tej samej kolejności, innymi słowy zapisy poszczególnych klientów są globalnie uporządkowane. Formalna definicja tego warunku wygląda następująco:
+Gwarancja \textbf{monotonicznych zapisów} (ang.\ \textit{Monotonic Writes}) oznacza, że kolejne zapisy klienta będą aplikowane na wszystkich serwerach w tej samej kolejności, innymi słowy zapisy poszczególnych klientów są globalnie uporządkowane. Formalna definicja tego warunku wygląda następująco:
 
 \begin{align*}
     \forall{C_i} \forall{S_j} (w_1 \xrightarrow{C_i} w_2|_{S_j} \Rightarrow w_1 \xrightarrow{S_j} w_2)
@@ -310,7 +319,7 @@ Przykładowe przetwarzanie z rysunku \ref{figure:replication_sess_gu} możemy pr
 
 \subsubsection{Monotonic Reads}
 
-Następną omawianą gwarancją sesji jest \textbf{monotoniczność odczytów} (ang. \textit{Monotonic Reads}). Polega ona na tym, że klient podczas każdej kolejnej interakcji z systemem widzi jego stan co najmniej tak samo aktualny jak podczas poprzedniej interakcji. Oznacza to, że jeśli już odczytano jakąś wartość $ v $ z systemu, to podczas żadnej z kolejnych interakcji klienta z systemem nie będzie możliwe odczytanie wartości starszej od $ v $, jeśli ma być zachowana gwarancja \textit{Monotonic Reads}. Powyższe zdanie w sposób formalny zapisuje się następująco:
+Następną omawianą gwarancją sesji jest \textbf{monotoniczność odczytów} (ang.\ \textit{Monotonic Reads}). Polega ona na tym, że klient podczas każdej kolejnej interakcji z systemem widzi jego stan co najmniej tak samo aktualny jak podczas poprzedniej interakcji. Oznacza to, że jeśli już odczytano jakąś wartość $ v $ z systemu, to podczas żadnej z kolejnych interakcji klienta z systemem nie będzie możliwe odczytanie wartości starszej od $ v $, jeśli ma być zachowana gwarancja \textit{Monotonic Reads}. Powyższe zdanie w sposób formalny zapisuje się następująco:
 
 \begin{align*}
     \forall{C_i} \forall{S_j} (r_1 \xrightarrow{C_i} r_2|_{S_j} \Rightarrow \forall{w_k} \in RW(r_1) (w_k \xrightarrow{S_j} r_2))
@@ -318,11 +327,13 @@ Następną omawianą gwarancją sesji jest \textbf{monotoniczność odczytów} (
 
 Przykładem zastosowania gwarancji \textit{Monotonic Reads} jest skrzynka mailowa użytkownika. Jeśli raz odczytamy pewne wiadomości, to przy następnym sprawdzeniu zawartości skrzynki mailowej chcemy widzieć wszystkie te wiadomości. Innymi słowy, użytkownik nie powinien tracić dostępu do informacji, z którą już się zapoznał.
 
-Patrząc na rysunek \ref{figure:replication_sess_gu} widzimy, że w przypadku każdych dwóch odczytów zleconych przez dowolnego klienta, odczyt późniejszy widzi wszystkie zapisy, które miały wpływ na na wyniki odczytane przez wcześniejszy odczyt, np. $ r_1(x)0 $ widzi zapisy $ w_1(x)0 $ i $ w_1(x)1 $, mające wpływ na odczyt $ r_1(x)0 $. Podobnie jest z parami odczytów: $ r_1(x)0 $ i $ r_1(x)3 $ oraz $ r_2(x)0 $ i $ r_2(x)3 $. W przypadku tego konkretnego przetwarzania gwarancja sesji \textit{Monotonic Reads} jest więc \textbf{spełniona}.
+Patrząc na rysunek \ref{figure:replication_sess_gu} widzimy, że w przypadku każdych dwóch odczytów
+zleconych przez dowolnego klienta, odczyt późniejszy widzi wszystkie zapisy, które miały wpływ na na
+wyniki odczytane przez wcześniejszy odczyt, np.\ $ r_1(x)0 $ widzi zapisy $ w_1(x)0 $ i $ w_1(x)1 $, mające wpływ na odczyt $ r_1(x)0 $. Podobnie jest z parami odczytów: $ r_1(x)0 $ i $ r_1(x)3 $ oraz $ r_2(x)0 $ i $ r_2(x)3 $. W przypadku tego konkretnego przetwarzania gwarancja sesji \textit{Monotonic Reads} jest więc \textbf{spełniona}.
 
 \subsubsection{Writes Follow Reads}
 
-Ostatnią z przedstawionych w niniejszej pracy gwarancji sesji są \textbf{zapisy po odczytach} (ang. \textit{Writes Follow Reads}). Jest zastosowanie oznacza, że użytkownik chce respektowania przez system przyczynowej zależości pomiędzy zapisami, które wykonuje a poprzednimi odczytami. Innymi słowy, jeśli odczytamy wartość $ v $ z jednego serwera w systemie, po czym na podstawie tej odczytanej wartości decydujemy się na wykonanie zapisu w systemie, to poprzez zastosowanie gwarancji \textit{Writes Follow Reads} zapewnimy, że wszystkie serwery najpierw wykonają zapisy mające wpływ na odczyt wartości $ v $, a dopiero następnie nasz kolejny zapis, będący następstwem odczytu wartości $ v $. Formalna definicja wygląda następująco:
+Ostatnią z przedstawionych w niniejszej pracy gwarancji sesji są \textbf{zapisy po odczytach} (ang.\ \textit{Writes Follow Reads}). Jest zastosowanie oznacza, że użytkownik chce respektowania przez system przyczynowej zależości pomiędzy zapisami, które wykonuje a poprzednimi odczytami. Innymi słowy, jeśli odczytamy wartość $ v $ z jednego serwera w systemie, po czym na podstawie tej odczytanej wartości decydujemy się na wykonanie zapisu w systemie, to poprzez zastosowanie gwarancji \textit{Writes Follow Reads} zapewnimy, że wszystkie serwery najpierw wykonają zapisy mające wpływ na odczyt wartości $ v $, a dopiero następnie nasz kolejny zapis, będący następstwem odczytu wartości $ v $. Formalna definicja wygląda następująco:
 
 \begin{align*}
     \forall{C_i} \forall{S_j} (r \xrightarrow{C_i} w|_{S_j} \Rightarrow \forall{w_k} \in RW(r) (w_k \xrightarrow{S_j} w))

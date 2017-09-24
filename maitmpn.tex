@@ -10,8 +10,9 @@
 \usepackage{marginnote}
 \usepackage{multirow}
 \usepackage{ltablex}
-
+\usepackage{booktabs}
 \usepackage{graphicx}
+
 \graphicspath{ {images/} }
 
 % nie dzielić!
@@ -54,6 +55,9 @@
 \import{chapters/}{06-summary.tex}
 
 \backmatter
-\import{chapters/}{bibliography.tex}
+
+% Testing bibtex
+\bibliography{chapters/bibliography}
+\bibliographystyle{ieeetr}
 
 \end{document}

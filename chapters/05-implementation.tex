@@ -65,20 +65,29 @@ Na stan tego aktora składają się następujące struktury odnoszące się do a
     \item \texttt{localVC} --- lokalny zegar wektorowy synchronizowany przy każdym odebraniu wiadomości \texttt{EntropyMessage}
     \item \texttt{lastMaterializedSeqNo} --- numer sekwencyjny (\texttt{Long}) ostatniej zmaterializowanej wiadomości
     \item \texttt{lastMaterializedCacheNo} --- numery sekwencyjne (dla spójności cache) ostatniej zmaterializowanej wiadomości dla poszczególnych kluczy (\texttt{Map[Key, Long]})
-    \item \texttt{sequencedMessagesVC} --- utrzymywana w kolejności rosnących numerów sekwencyjnych lista otrzymanych obiektów \texttt{OrderTag} odnoszących się do wiadomości, których jeszcze nie można zmaterializować (zob. sekcja \ref{subsubsection:sequencingimpl})
+    \item \texttt{sequencedMessagesVC} --- utrzymywana w kolejności rosnących numerów sekwencyjnych
+        lista otrzymanych obiektów \texttt{OrderTag} odnoszących się do wiadomości, których jeszcze
+        nie można zmaterializować (zob.\ sekcja \ref{subsubsection:sequencingimpl})
     \item \texttt{VsSGrequestBuffer} --- bufor żądań, których nie udało się obsłużyć od razu po ich przybyciu do systemu ze względu na wymagane przez nie minimalne wartości lokalnego zegara wektorowego, które muszą być zachowane aby móc zrealizować dane żądanie
     \item \texttt{entropyMessagesBuffer} --- bufor wiadomości \texttt{EntropyMessage}, które nie mogły być zaaplikowane do bufora entropii ze względu na wymaganą, minimalną wartość lokalnego zegara wektorowego (\texttt{demandedVectorClock}).
 \end{itemize}
 
 \subsubsection{Dobór strategii konstrukcji wartości}
 
-W zależności od określonego w otrzymanym żądaniu odczytu wymagania dotyczącego danocentrycznego modelu spójności, aktor wybiera odpowiednią podklasę \texttt{ValueConstructor} (szerszy opis w sekcji \ref{subsection:valueconstructor}), która na podstawie danego w aktualnym momencie stanu przetwarzania (zob. sekcja \ref{subsubsection:datastructuresimpl}) wybierze zgodnie z algorytmem wartość dla żądanego klucza. W przypadku braku danych w entropii wartość zostanie zwrócona z pamięci trwałej (\textit{backend} --- sekcja \ref{subsection:backend}).
+W zależności od określonego w otrzymanym żądaniu odczytu wymagania dotyczącego danocentrycznego
+modelu spójności, aktor wybiera odpowiednią podklasę \texttt{ValueConstructor} (szerszy opis w
+sekcji \ref{subsection:valueconstructor}), która na podstawie danego w aktualnym momencie stanu
+przetwarzania (zob.\ sekcja \ref{subsubsection:datastructuresimpl}) wybierze zgodnie z algorytmem wartość dla żądanego klucza. W przypadku braku danych w entropii wartość zostanie zwrócona z pamięci trwałej (\textit{backend} --- sekcja \ref{subsection:backend}).
 
 \subsubsection{Materializacja}
 
 Aktor \texttt{RequestAcceptor} posiada bezpośrednią referencję do obiektu będącego podtypem klasy \texttt{KeyValueBackend}, którego interfejs jest abstrakcją fizycznego nośnika bazy danych typu klucz-wartość.
 
-W tym nośniku składowane są wartości dla spójności sekwencyjnej, materializowane po otrzymaniu wiadomości od procesu numerującego (zob. sekcja \ref{subsubsection:sequencingimpl}), podczas gdy entropia zapisywana jest w pamięci ulotnej. Teoretycznie jednak inna implementacja systemu mogłaby zakładać także materializację wartości dla innych poziomów spójności lub przechowywanie entropii na wspólnym nośniku z wartościami zmaterializowanymi (np. w celu realizacji pewnych założeń dotyczących choćby schematu odtwarzania procesu po awarii --- ten aspekt szerzej porusza sekcja \ref{subsection:replicafailures}).
+W tym nośniku składowane są wartości dla spójności sekwencyjnej, materializowane po otrzymaniu
+wiadomości od procesu numerującego (zob.\ sekcja \ref{subsubsection:sequencingimpl}), podczas gdy
+entropia zapisywana jest w pamięci ulotnej. Teoretycznie jednak inna implementacja systemu mogłaby
+zakładać także materializację wartości dla innych poziomów spójności lub przechowywanie entropii na
+wspólnym nośniku z wartościami zmaterializowanymi (np.\ w celu realizacji pewnych założeń dotyczących choćby schematu odtwarzania procesu po awarii --- ten aspekt szerzej porusza sekcja \ref{subsection:replicafailures}).
 
 \subsubsection{Sekwencjonowanie wiadomości} \label{subsubsection:sequencingimpl}
 
@@ -118,7 +127,7 @@ Najprostsza implementacja cechy \texttt{KeyValueBackend} opiera się na prostej 
 
 Implementacja opierająca się na bazie danych Redis wykorzystuje do dostępu do serwera bazy danych polecaną przez jej twórców bibliotekę \texttt{scala-redis} \footnote{https://github.com/debasishg/scala-redis}. Redis jest systemem bazy danych operującym w pamięci operacyjnej, posiadającym mechanizmy zrzucania zapisów do pamięci trwałej --- dzięki czemu nadaje się do zastosowania w warunkach produkcyjnych.
 
-Redis posiada własne mechanizmy replikacji (zob. rozdział \ref{chapter:existingsolutions}) oparte na schemacie \textit{master-slave}, które są ortogonalne wobec rozwiązań zastosowanych w opracowanym w ramach tej pracy schemacie. Wszelkie rozważania dotyczące działania prezentowanych tutaj algorytmów zakładają brak odczytu nieświeżych danych --- po fizycznym zapisie do nośnika pary klucz-wartość, odczyt tego klucza wykonany w dowolnie krótkim czasie po zapisie zwróci wynik tego, a nie jakiegokolwiek wcześniejszego zapisu. Schemat replikacji opisany w specyfikacji Redis Cluster zapewnia, że jedynie wykonywanie odczytów bezpośrednio przez repliki \textit{slave} wiąże się z możliwością odczytu nieświeżych kopii danych \footnote{https://redis.io/topics/cluster-spec\#scaling-reads-using-slave-nodes} --- zatem przy założeniu, że odczyty odbywają się poprzez replikę \textit{master}, mechanizmy replikacji wbudowane w bazę danych Redis mogą być wykorzystywane równocześnie z zaimplementowanymi w ramach opisywanej implementacji.
+Redis posiada własne mechanizmy replikacji (zob.\ rozdział \ref{chapter:existingsolutions}) oparte na schemacie \textit{master-slave}, które są ortogonalne wobec rozwiązań zastosowanych w opracowanym w ramach tej pracy schemacie. Wszelkie rozważania dotyczące działania prezentowanych tutaj algorytmów zakładają brak odczytu nieświeżych danych --- po fizycznym zapisie do nośnika pary klucz-wartość, odczyt tego klucza wykonany w dowolnie krótkim czasie po zapisie zwróci wynik tego, a nie jakiegokolwiek wcześniejszego zapisu. Schemat replikacji opisany w specyfikacji Redis Cluster zapewnia, że jedynie wykonywanie odczytów bezpośrednio przez repliki \textit{slave} wiąże się z możliwością odczytu nieświeżych kopii danych \footnote{https://redis.io/topics/cluster-spec\#scaling-reads-using-slave-nodes} --- zatem przy założeniu, że odczyty odbywają się poprzez replikę \textit{master}, mechanizmy replikacji wbudowane w bazę danych Redis mogą być wykorzystywane równocześnie z zaimplementowanymi w ramach opisywanej implementacji.
 
 Konfiguracja połączenia z serwerem Redis odbywa się w podkluczach pliku konfiguracyjnego aplikacji odpowiadających za poszczególne środowiska uruchomieniowe (\texttt{default}, \texttt{test}).
 
@@ -145,7 +154,11 @@ repliflex {
 
 Podklasy typu \texttt{ValueConstructor} odpowiadają za zbudowanie wartości dla danych wymagań dotyczących danocentrycznego modelu spójności na podstawie aktualnego stanu przetwarzania, w szczególności entropii, przechowującej dane jeszcze niezmaterializowane, i fizycznego nośnika, w którym przechowywane są wartości zmaterializowane. Wszystkie konstruktory, zgodnie z algorytmem i ze względu na specyfikę komunikacji aktorów działają w sposób nieblokujący, ograniczając się do wykonania obliczeń opartych na aktualnym stanie procesu.
 
-Implementacja schematu konstrukcji wartości dla dowolnego innego modelu spójności polega na utworzeniu klasy dziedziczącej z \texttt{ValueConstructor}. Jako pole \texttt{implicit} wymagany jest każdorazowo obiekt typu \texttt{KeyValueBackend}, a także dla poszczególnych rodzajów spójności --- w zależności od tego, jakie elementy stanu brane są pod uwagę --- inne pola posiadane przez aktora \texttt{RequestAcceptor}, np. \texttt{entropy: Map[Key, List[EntropyMessage]]}.
+Implementacja schematu konstrukcji wartości dla dowolnego innego modelu spójności polega na
+utworzeniu klasy dziedziczącej z \texttt{ValueConstructor}. Jako pole \texttt{implicit} wymagany
+jest każdorazowo obiekt typu \texttt{KeyValueBackend}, a także dla poszczególnych rodzajów spójności
+--- w zależności od tego, jakie elementy stanu brane są pod uwagę --- inne pola posiadane przez
+aktora \texttt{RequestAcceptor}, np.\ \texttt{entropy: Map[Key, List[EntropyMessage]]}.
 
 We wszystkich przypadkach pusty bufor entropii determinuje zwrócenie wartości zmaterializowanej, spójnej sekwencyjnie, a zatem spełniająej też każdy inny rozważany model spójności.
 
@@ -201,11 +214,22 @@ Model opisany w rozdziale \ref{chapter:systemdescription} zakłada funkcjonowani
 
 % przypis do powyższego: http://www.bau.edu.jo/UserPortal/UserProfile/PostsAttach/10617_1870_1.pdf str. 242
 
-Założenie o niezawodności kanałów eliminuje z rozważań możliwość występowania podziałów sieci, w których pewna jej część składająca się z jednego lub wielu węzłów traci możliwość komunikacji z pozostałymi węzłami. Traci w tej sytuacji istotność twierdzenie CAP omówione w sekcji \ref{captheorem}, mówiące o nieodłączności pewnego kompromisu pomiędzy spójnością danych a dostępnością systemu w sytuacji istnienia podziałów sieci. W przypadku jednak problemów związanych z funkcjonowaniem innych warstw stosu protokołów sieciowych --- np. fizycznych awarii łącz danych --- mogą istnieć okresy, w których w systemie pomimo zachowania poprawnej semantyki przetwarzania przez proces aplikacyjny, może dochodzić do podziałów sieci. Biorąc pod uwagę taki scenariusz, należy powrócić do rozważania zachowania systemu w sytuacji wystąpienia takich awarii.
+Założenie o niezawodności kanałów eliminuje z rozważań możliwość występowania podziałów sieci, w
+których pewna jej część składająca się z jednego lub wielu węzłów traci możliwość komunikacji z
+pozostałymi węzłami. Traci w tej sytuacji istotność twierdzenie CAP omówione w sekcji
+\ref{captheorem}, mówiące o nieodłączności pewnego kompromisu pomiędzy spójnością danych a
+dostępnością systemu w sytuacji istnienia podziałów sieci. W przypadku jednak problemów związanych z
+funkcjonowaniem innych warstw stosu protokołów sieciowych --- np.\ fizycznych awarii łącz danych --- mogą istnieć okresy, w których w systemie pomimo zachowania poprawnej semantyki przetwarzania przez proces aplikacyjny, może dochodzić do podziałów sieci. Biorąc pod uwagę taki scenariusz, należy powrócić do rozważania zachowania systemu w sytuacji wystąpienia takich awarii.
 
 W sytuacji, gdy w systemie funkcjonuje partycja oderwana komunikacyjnie od pozostałej części systemu, rozgłoszenia zleceń zapisu pomiędzy replikami nie są w stanie przekroczyć granicy partycji. Rozważmy podział, w którym w sieci występują dwie partycje --- zatem w jednej znich znajduje się proces sekwencera. Funkcjonowanie tej partycji przyczynia się w takim układzie do utraty możliwości odzyskania przez procesy z drugiej części sieci pełnego obrazu zapisów, do których doszło w trakcie istnienia podziału, ponieważ procesy będące częścią partycji sekwencera odbiorą w krótkim czasie numery sekwencyjne wiadomości i dokonają materializacji, zrzucając odpowiednie dane ze swoich entropii. Druga z partycji będzie w tym czasie odbierać tylko zlecenia zapisów i odczytów przeprowadzane przez znajdujące się w niej procesy. Nie będą docierać do niej numery sekwencyjne wiadomości, a zatem dla spójności sekwencyjnej i podręcznej zwracane będą dane przestarzałe; w przypadku odczytów w trybie spójności przyczynowej sam brak informacji o zdarzeniach w drugiej partycji nie pociąga za sobą tak poważnych konsekwencji (pomijając fakt utraty potencjalnej możliwości pobrania z partycji sekwencera danych o zdarzeniach ze względu na ucięcie entropii) ze względu na niezależność zdarzeń.
 
-Dostępność nierealizowalnego w praktyce w systemach asynchronicznych mechanizmu wykrycia istnienia podziału sieci pozwoliłaby procesom znajdującym się w partycji sekwencera na natychmiastowe zaprzestanie usuwania danych z entropii w przypadku wykrycia podziału sieci, a następnie po stwierdzeniu ponownego poprawnego funkcjonowania systemu na przyrostową resynchronizację danych (w rozwiązaniu o schemacie np. zbliżonym do stosowanego w systemie Redis, zob. sekcja \ref{redisrepl}). W praktyce w celu rozwiązania problemu należałoby poszukiwać innych rozwiązań, np. sięgając do mechanizmów potwierdzeń opartych na kworum.
+Dostępność nierealizowalnego w praktyce w systemach asynchronicznych mechanizmu wykrycia istnienia
+podziału sieci pozwoliłaby procesom znajdującym się w partycji sekwencera na natychmiastowe
+zaprzestanie usuwania danych z entropii w przypadku wykrycia podziału sieci, a następnie po
+stwierdzeniu ponownego poprawnego funkcjonowania systemu na przyrostową resynchronizację danych (w
+rozwiązaniu o schemacie np.\ zbliżonym do stosowanego w systemie Redis, zob.\ sekcja
+\ref{redisrepl}). W praktyce w celu rozwiązania problemu należałoby poszukiwać innych rozwiązań,
+np.\ sięgając do mechanizmów potwierdzeń opartych na kworum.
 
 \subsection{Mechanizmy rozgłaszania niezawodnego} \label{subsection:reliablebroadcast}
 
@@ -220,7 +244,19 @@ Rozgłaszane wiadomości \texttt{EntropyMessage} (zlecenia zapisów) i \texttt{M
 
 Klient zlecający wykonanie operacji zapisu na danej replice nie otrzymuje od niej żadnego potwierdzenia wskazującego na powodzenie operacji i niejawnie zakłada, że operacja powiodła się. Replika, przez którą przeprowadzany jest zapis, używa opisanego w sekcji \ref{subsection:reliablebroadcast} mechanizmu rozgłaszania, który zapewnia, że do pomyślności zapisu wystarczy odebranie wiadomości przez jeden poprawny proces. Może jednak dojść do sytuacji, w której replika po otrzymaniu zlecenia ulegnie awarii, zanim wyśle wiadomość jakiemukolwiek innemu procesowi. W tej sytuacji zapis zostanie bezpowrotnie utracony pomimo, że klient zakładał, że zapis zakończył się powodzeniem.
 
-Możliwe jest rozbudowanie implementacji o schemat detekcji sytuacji awaryjnych oparty na potwierdzeniach odbioru zapisu wysyłanych klientowi przez repliki. Każda replika odbierająca wiadomość \texttt{EntropyMessage}, oznaczoną dodatkowo referencją do klienta, wysyłałaby w takim układzie do niego potwierdzenie jej otrzymania. Klient po wykonaniu zlecenia mógłby kontynuować przetwarzanie, oczekując w tle przez określony czas na choć jedno (bazując na własnościach zgodnego rozgłaszania niezawodnego) potwierdzenie dotyczące każdego z wykonanych zapisów. Brak potwierdzenia w określonym czasie skutkowałby interpretowalnym w dowolny (specyficzny dla aplikacji sposób) komunikatem o tym, że dany zapis mógł zostać zakończony niepowodzeniem. Aplikacja kliencka mogłaby też po zleceniu zapisu blokować się do czasu otrzymania takiego potwierdzenia, co wzmocniłoby jej pewność faktycznego wykonania operacji. Interesujące z punktu widzenia możliwości dopasowania działania systemu do konkretnych potrzeb wydaje się udostępnienie możliwości wymuszenia wykonania konkretnego zapisu w jednym z trzech trybów --- bez potwierdzeń, z potwierdzeniami w tle lub z potwierdzeniami synchronizującymi. Aplikacja mogłaby wtedy np. wykonywać operacje krytyczne z jej punktu widzenia w trybie z potwierdzeniami synchronizującymi, a inne w trybie z potwierdzeniami w tle, mając wypracowany pewien schemat postępowania w sytuacjach, w których informacja o możliwym niepowodzeniu zapisu odbierana jest z opóźnieniem, a w międzyczasie mogły być zlecane inne zapisy.
+Możliwe jest rozbudowanie implementacji o schemat detekcji sytuacji awaryjnych oparty na
+potwierdzeniach odbioru zapisu wysyłanych klientowi przez repliki. Każda replika odbierająca
+wiadomość \texttt{EntropyMessage}, oznaczoną dodatkowo referencją do klienta, wysyłałaby w takim
+układzie do niego potwierdzenie jej otrzymania. Klient po wykonaniu zlecenia mógłby kontynuować
+przetwarzanie, oczekując w tle przez określony czas na choć jedno (bazując na własnościach zgodnego
+rozgłaszania niezawodnego) potwierdzenie dotyczące każdego z wykonanych zapisów. Brak potwierdzenia
+w określonym czasie skutkowałby interpretowalnym w dowolny (specyficzny dla aplikacji sposób)
+komunikatem o tym, że dany zapis mógł zostać zakończony niepowodzeniem. Aplikacja kliencka mogłaby
+też po zleceniu zapisu blokować się do czasu otrzymania takiego potwierdzenia, co wzmocniłoby jej
+pewność faktycznego wykonania operacji. Interesujące z punktu widzenia możliwości dopasowania
+działania systemu do konkretnych potrzeb wydaje się udostępnienie możliwości wymuszenia wykonania
+konkretnego zapisu w jednym z trzech trybów --- bez potwierdzeń, z potwierdzeniami w tle lub z
+potwierdzeniami synchronizującymi. Aplikacja mogłaby wtedy np.\ wykonywać operacje krytyczne z jej punktu widzenia w trybie z potwierdzeniami synchronizującymi, a inne w trybie z potwierdzeniami w tle, mając wypracowany pewien schemat postępowania w sytuacjach, w których informacja o możliwym niepowodzeniu zapisu odbierana jest z opóźnieniem, a w międzyczasie mogły być zlecane inne zapisy.
 
 Taki mechanizm potwierdzeń powiększyłby złożoność komunikacyjną w systemie zawierającym $n$ węzłów o $n$ wiadomości potwierdzających, nie zwiększając rzędu złożoności.
 
@@ -295,10 +331,199 @@ Jako skład danych natomiast w środowisku testowym najlepiej nadaje się \textt
 
 Charakterystyka systemu obejmująca zarówno stos technologiczny (Scala, Akka z transportem TCP) i odmienny od istniejących na rynku rozwiązań model przetwarzania rozproszonego skłoniła autorów do skupienia się w zakresie testów wydajnościowych na porównaniu sposobu zachowania systemu w zależności od wybieranych ustawień dotyczących wymagań nakładanych na spójność danych.
 
-Szczególnie interesujące z punktu widzenia użytkownika systemu cechy wydajnościowe to wpływ generowanego obciążenia oraz nałożonych przez klientów wymagań spójności danych na przepustowość systemu i --- szczególnie w przypadku zastosowania gwarancji sesji --- czas odpowiedzi. Innym wartym poruszenia zagadnieniem jest stopień nieświeżości (ang. \textit{staleness}) danych, które system zwraca przy dużym obciążeniu i coraz silniejszych modelach spójności.
+Szczególnie interesujące z punktu widzenia użytkownika systemu cechy wydajnościowe to wpływ
+generowanego obciążenia oraz nałożonych przez klientów wymagań spójności danych na przepustowość
+systemu i --- szczególnie w przypadku zastosowania gwarancji sesji --- czas odpowiedzi. Innym wartym
+poruszenia zagadnieniem jest stopień nieświeżości (ang.\ \textit{staleness}) danych, które system zwraca przy dużym obciążeniu i coraz silniejszych modelach spójności.
+
+Zaprezentowane poniżej testy nie stanowią próby kompleksowej oceny efektywności systemu, lecz można śmiało uznać je za przyczynek do potencjalnej kontynuacji jego badania.
 
 \subsection{Środowisko testowe}
 
-\subsection{Przepustowość i czas odpowiedzi}
+Testy przeprowadzono z wykorzystaniem chmurowej infrastruktury obliczeniowej Amazon EC2, w której dla każdego scenariusza testowego rozmieszczono serwery bazy danych na pewnej liczbie instancji maszyn wirtualnych. W środowisku Amazon EC2 rozlokowane zostały także klienty zlecające odpowiednie operacje serwerom.
 
-\subsection{Aktualność odczytów}
+Chmura obliczeniowa Amazon EC2 podzielona jest na fizycznie odległe od siebie pod względem geograficznym regiony, które z kolei dzielą się na tzw. strefy dostępności (\textit{availability zones}). Każda ze stref dostępności znajduje się w oddzielnej lokalizacji fizycznej, jednak w obrębie regionu są one połączone łączami o niskich opóźnieniach. Połączenia pomiędzy serwerami znajdującymi się w jednym regionie można zatem traktować dla rozważań o efektywności systemu jako połączenia w obrębie sieci lokalnej, zaś połączenia pomiędzy różnymi regionami lepiej reprezentują komunikację w sieci rozległej.
+
+Testy systemu przeprowadzane były w konfiguracji imitującej sieć lokalną, tj. serwery i klienty bazy danych rozlokowane w jednym regionie usługi EC2. Utworzony system prototypowy udostępnia końcówki HTTP służące do sterowania serwerami i klientami, obsługiwane przez prostą aplikację sterowniczą zarządzającą poszczególnymi instancjami serwerów i klientów.
+
+Wszystkie testy były przeprowadzane z użyciem strategii losowego (z rozkładem równomiernym) doboru przez klienta serwera, któremu zlecane są kolejne żądania. Szczegóły dotyczące scenariuszy testowych --- takie, jak np. opis sekwencji zgłaszania żądań czy liczba uczestniczących w przetwarzaniu serwerów --- opisane są w dalszych podsekcjach.
+% http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html
+
+% \subsection{Przepustowość}
+
+% W celu porównania parametrów wydajnościowych systemu w zależności od wybranych ustawień spójności
+% można zdefiniować miarę opartą na \textbf{progu nasycenia} --- granicznej wartości obciążenia
+% systemu (wyrażanego np.\ w liczbie operacji zapisu przypadających na jednostkę czasu), przy której z zadaną częstością natychmiastowy (tj. odbywający się tak szybko, jak to jest możliwe, po zleceniu operacji zapisu) odczyt zapisanych danych daje wartość wcześniejszą, niż ta, której zapis zlecono bezpośrednio przed odczytem.
+
+% \ldots
+
+\subsection{Przepustowość systemu}
+
+Po zleceniu zapisu wartości bez wykorzystania gwarancji sesji i, co za tym idzie, oczekiwania na wartość będącą w pewnej zależności od wcześniejszych akcji klienta, natychmiastowy (tj. odbywający się tak szybko, jak to jest możliwe, po zleceniu operacji zapisu) odczyt danych nie musi zwrócić wartości zapisanej bezpośrednio przed tym odczytem --- niemniej bywa, że jest inaczej. Wzrost obciążenia i narzutów związanych z obsługą żądań przez serwery powoduje, że odczytywanie nieświeżych (tzn. starszych niż zapisywane natychmiast przed odczytem) wartości jest częstsze.
+
+Zbadano wpływ na ,,aktualność'' danych odczytywanych krótko po zapisie takich czynników, jak: poziom spójności, liczba uczestniczących w przetwarzaniu serwerów i czas, jaki upływa od zlecenia zapisu do zlecenia próby odczytu ze zmiennej, do której zapisywano. Klastry złożone z 3, 7 oraz 14 węzłów w ramach testu przyjmowały serie 100 par żądań (zapis numeru porządkowego żądania i odczyt ze zmiennej, do której go zapisywano); pomiędzy każdym zleceniem zapisu i następującym po nim zleceniem odczytu oczekiwano 10 milisekund, 5 milisekund lub nie oczekiwano wcale (element regulujący obciążeniem systemu). Pomiędzy każdą parą żądań oczekiwano 10 milisekund.
+
+Punktem wyjściowym każdej instancji testowej były serwery i klient w stanie czystym. Dla każdej konfiguracji składającej się z: danej liczby serwerów, danego opóźnienia między zapisem i odczytem i danego poziomu spójności, próba została powtórzona pięciokrotnie; za każdym razem zebrano odsetek żądań, które zwróciły wynik zapisany bezpośrednio przed odpowiednim odczytem, po czym wyniki składowe zostały uśrednione (pewnych interesujących wniosków dostarcza też w niektórych przypadkach analiza rozrzutu wyników, o czym traktuje dalsza część podsekcji).
+
+Wykresy \ref{figure:pramgraph}, \ref{figure:causgraph}, \ref{figure:cachegraph} i \ref{figure:seqgraph} obrazują wpływ trzech wymienionych czynników na opisywaną miarę aktualności odczytów.
+
+\begin{figure}[H]
+    \includegraphics[width=\linewidth]{images/graphs/pram.png}
+    \caption{Wykres testu powodzenia natychmiastowych odczytów dla spójności PRAM}
+    \label{figure:pramgraph}
+\end{figure}
+
+Konstrukcja wartości dla spójności PRAM odbywa się z użyciem prostego algorytmu, który nie nakłada praktycznie żadnych dodatkowych ograniczeń co do spójności danych, toteż --- jak pokażą kolejne wykresy --- to właśnie odczyt ze spójnością PRAM daje największą szansę na natychmiastowy odczyt zleconego zapisu. Wpływ liczby uczestniczących w przetwarzaniu serwerów na zmniejszenie się tej szansy może być uwarunkowany faktem, że im ich więcej, tym mniejsze prawdopodobieństwo losowego wyboru serwera, do którego odpowiednio szybko dotarła zapisywana informacja.
+
+Poszczególne próbki nie wykazywały znaczącego rozrzutu uzyskiwanych wartości, w przeciwieństwie do opisanego poniżej efektu dotyczącego spójności podręcznej i sekwencyjnej, niewidocznego w wykresach \ref{figure:cachegraph} i \ref{figure:seqgraph} zawierających dane uśrednione).
+
+\begin{figure}[H]
+    \includegraphics[width=\linewidth]{images/graphs/caus.png}
+    \caption{Wykres testu powodzenia natychmiastowych odczytów dla spójności przyczynowej}
+    \label{figure:causgraph}
+\end{figure}
+
+Wykonywanie testów na serwerach w stanie czystym i niewielka ilość przetwarzanych danych w każdej próbce mogłyby sugerować, że nie należy spodziewać się znaczącej różnicy w stosunku do zachowania przy spójności PRAM. Możliwe jednak, że ze względu na fakt, iż wartości dla spójności przyczynowej konstruowane są przy pomocy algorytmu wymagającego pewnego nakładu obliczeniowego, występuje zauważalne na wykresie nasilenie spadku szansy na udany natychmiastowy odczyt wraz ze wzrostem liczby serwerów lub spadkiem opóźnienia między zapisem i odczytem.
+
+\begin{figure}[H]
+    \includegraphics[width=\linewidth]{images/graphs/cache.png}
+    \caption{Wykres testu powodzenia natychmiastowych odczytów dla spójności podręcznej}
+    \label{figure:cachegraph}
+\end{figure}
+
+\begin{figure}[H]
+    \includegraphics[width=\linewidth]{images/graphs/seq.png}
+    \caption{Wykres testu powodzenia natychmiastowych odczytów dla spójności sekwencyjnej}
+    \label{figure:seqgraph}
+\end{figure}
+
+Wartości dla spójności podręcznej i sekwencyjnej konstruowane są w oparciu o algorytm wykorzystywany też dla spójności przyczynowej, stąd profile wykresów \ref{figure:cachegraph} i \ref{figure:seqgraph} są zbliżone do \ref{figure:causgraph}.
+
+Interesująca w tym przypadku jest analiza rozrzutu pomiarów dla niektórych instancji. Przykładowo, dla spójności sekwencyjnej, 7 serwerów i odstępu między zapisem i odczytem 5 milisekund, natychmiastowy odczyt powiódł się odpowiednio w: 16, 27, 6, 6 i 7 procentach przypadków; dla spójności podręcznej, 7 serwerów, bez odstępu między zapisem i odczytem pomiary wyniosły kolejno: 2, 9, 19, 13 i 0 procent.
+
+Można przypuszczać, że konieczność transmisji przez serwer sekwencera wiadomości porządkującej zapis i odebrania tej wiadomości przez serwer, z którego klient czyta dane (co wiąże się z dodatkowym opóźnieniem transmisji) może mieć wpływ na większe zróżnicowania czasu potrzebnego na to, by serwer mógł zwrócić dany zapis jako odpowiedź na żądanie odczytu.
+
+
+% \subsection{Aktualność odczytów}
+
+% Wraz ze wzrostem obciążenia systemu żądaniami zapisu oczekiwane jest --- w sytuacji, gdy wykorzystywane są tylko wymagania danocentryczne --- odczytywanie coraz to bardziej nieaktualnych (w sensie czasu zlecenia zapisu) danych. Oprócz znalezienia progowych wartości obciążenia systemu, przy których występuje zadana częstość występowania odczytów nieaktualnych danych, potencjalnie interesujące wydaje się zmierzenie tego, w jakim stopniu są one nieaktualne, tzn. określenie o ile jednostek (mających przełożenie na rzeczywisty czas zlecenia zapisu) wcześniejsze dane --- w stosunku do ostatniego wykonanego zapisu --- są odczytywane z serwerów.
+
+% \ldots
+
+\subsection{Czas odpowiedzi}
+
+W przypadku przetwarzania, w którym podłączone do klastra klienty stosują wyłącznie wymagania oparte na modelach danocentrycznych, odpowiedź jest konstruowana w sposób natychmiastowy i czas jej otrzymania zależy jedynie od występujących w sieci opóźnień i długości przetwarzania lokalnego. Czas odpowiedzi staje się istotniejszym czynnikiem do zbadania, gdy w żądaniach odczytu (i zapisu) uwzględniane są modele spójności zorientowane na klienta. Opóźnienia zależą wtedy od opóźnień propagacji danych pomiędzy poszczególnymi serwerami replik oraz od obciążenia systemu żądaniami.
+
+Celem weryfikacji przypuszczeń na temat wpływu zastosowania gwarancji sesji na czas odpowiedzi przeprowadzono testy porównujące zachowanie obciążonego systemu w sytuacji, gdy węzły klienckie nie używają przy zlecaniu operacji gwarancji sesji, z zachowaniem przy określonym wymaganiu dotyczącym spójności zorientowanej na klienta.
+
+Czas odpowiedzi na żądanie mierzono w milisekundach jako różnicę wskazania funkcji \texttt{System.getCurrentTimeMillis} w momencie wysłania funkcji (dołączanego do wysyłanego przez klienta do serwera obiektu \texttt{ClientRequest} i odsyłanego komunikatu \texttt{ClientResponse}) i odbioru odpowiedzi. Z uwagi na specyfikę przetwarzania wiadomości w Akka warto zaznaczyć, że dbiór odpowiedzi jest tutaj rozumiany jako moment pojawienia się jej w strukturze \texttt{Mailbox}, będącej istniejącą osobno dla każdego z aktorów kolejką, z której zgodnie z kolejnością pojawiania się w niej przychodzące wiadomości przekazywane są do funkcji \texttt{receive} aktora (co ze względu na jednoczesne przetwarzanie maksymalnie jednej wiadomości przez aktora może nastąpić z opóźnieniem).
+
+Dla każdej z gwarancji sesji wykonano test w środowisku z pewną liczbą instancji serwerów i klientów, polegający na wykonaniu 5000 razy zdefiniowanej dla każdego ze scenariuszy rundy zleceń (w postaci opisanej w części \ref{subsubsection:console_interface}). W zależności od scenariusza, zlecenia w rundzie były identyczne dla każdego z klientów lub różniące się pomiędzy klientami, zawsze natomiast serie rund inicjowane było jednocześnie. Za wyjątkiem nielicznych zleceń wykorzystywano też synchronizację z momentem otrzymania wyniku operacji poprzez parametr \texttt{wait} w celu umożliwienia właściwego funkcjonowania mechanizmów gwarancji sesji. Wyniki zostały zebrane poprzez uśrednienie czasów odpowiedzi z 10-krotnie powtórzonego scenariusza.
+
+\subsubsection*{Monotonic Writes}
+
+Test czasu odpowiedzi dla gwarancji Monotonic Writes, odnoszącej się do konieczności oczekiwania przed wykonaniem kolejnego zapisu na pewnym serwerze na wykonanie się na tym serwerze wszystkich wcześniejszych operacji zapisu zleconych przez klienta (być może kierowanych do innych serwerów), został przeprowadzony dla 11 serwerów i 4 klientów. Pomiarowi podlegał średni czas odpowiedzi wszystkich żądań.
+
+Runda zleceń w tej grupie testów miała postać:
+\begin{lstlisting}
+= k<n> v<n> mw wait
+\end{lstlisting}
+w scenariuszu aktywnej gwarancji sesji Monotonic Writes, oraz:
+\begin{lstlisting}
+= k<n> v<n> wait
+\end{lstlisting}
+w scenariuszu, w którym gwarancja ta była nieaktywna.
+
+\subsubsection*{Read Your Writes}
+
+Test dla gwarancji Read Your Writes, w której wymaga się, by serwer odpowiadający na żądanie odczytu miał wiedzę o wszystkich wcześniejszych wykonywanych przez klienta zapisach, przeprowadzono na 11 serwerach i 4 klientach. Wykonywano operacje odczytu i zapisu, ale wynikowa średnia czasu odpowiedzi obliczana była tylko dla operacji odczytu, oznaczonych gwarancją RYW lub bez tego wymagania.
+
+Każda \texttt{n}-ta z kolei runda zleceń (oprócz każdej co piątej rundy) w tej grupie testów miała postać:
+\begin{lstlisting}
+= k<n> v<n>
+\end{lstlisting}
+zaś co piąta runda przyjmowała dla scenariusza z włączoną gwarancją RYW postać:
+\begin{lstlisting}
+= k<n> v<n> wait
+? k<n> pram ryw wait
+\end{lstlisting}
+natomiast dla scenariusza bez gwarancji RYW:
+\begin{lstlisting}
+= k<n> v<n> wait
+? k<n> pram wait
+\end{lstlisting}
+Zauważyć należy, że zgodnie ze specyfikacją specyfikatora \texttt{wait}, przed zleceniem odczytu oczekiwano tylko na jeden z wykonanych zapisów (w praktyce można byłoby to usprawnić przez dodanie specyfikatora oczekiwania na wszystkie operacje z pewnej określonej grupy). Może to mieć pewne znaczenie w kontekście funkcjonowania gwarancji sesji, ponieważ przed odczytem z gwarancją RYW nie ma gwarancji otrzymania odpowiedzi (ze znacznikami czasowymi) na wszystkie wykonane zapisy, jednak zdecydowano się na tym etapie pozostawić funkcjonowanie scenariusza w tej formie ze względu na spodziewany --- pomimo wszystko --- wpływ obecności gwarancji sesji na czasy dostępu.
+
+\subsubsection*{Monotonic Reads}
+
+Test dla gwarancji Monotonic Reads, której istotą jest wymaganie, by serwer odpowiadający na żądanie odczytu miał wiedzę o wszystkich wcześniejszych zapisach mających wpływ na wszystkie wcześniejsze odczyty klienta, przeprowadzono na 13 serwerach i 2 klientach. Jeden z klientów odpowiedzialny był za ciągłą aktualizację wartości w kluczu z zachowaniem gwarancji Monotonic Writes (czas odpowiedzi tych zapisów nie był brany pod uwagę). Drugi klient odczytywał wartość z użyciem włączonej lub wyłączonej gwarancji Monotonic Reads, i jego czasy odpowiedzi złożyły się na wynik końcowy.
+
+Runda o numerze \texttt{n} dla klienta zapisującego przyjęła postać:
+\begin{lstlisting}
+= testkey v<n> mw wait
+\end{lstlisting}
+natomiast dla klienta odczytującego z gwarancją MR:
+\begin{lstlisting}
+= testkey v<n> pram mr wait
+\end{lstlisting}
+lub dla klienta odczytującego bez tej gwarancji:
+\begin{lstlisting}
+= testkey v<n> pram wait
+\end{lstlisting}
+
+\subsubsection*{Writes Follow Reads}
+
+Test dla gwarancji Writes Follow Reads, której istotą jest wymaganie, by serwer odpowiadający na żądanie zapisu miał wiedzę o wszystkich wcześniejszych zapisach mających wpływ na wszystkie wcześniejsze odczyty klienta, przeprowadzono na 11 serwerach i 4 klientach. Wykonywano operacje odczytu i zapisu, ale wynikowa średnia czasu odpowiedzi obliczana była tylko dla operacji zapisu, oznaczonych gwarancją WFR lub bez tego wymagania.
+
+Każda \texttt{n}-ta z kolei runda zleceń (oprócz każdej co piątej rundy) w tej grupie testów miała postać:
+\begin{lstlisting}
+? testkey pram
+\end{lstlisting}
+zaś co piąta runda przyjmowała dla scenariusza z włączoną gwarancją WFR postać:
+\begin{lstlisting}
+? testkey pram wait
+= testkey v<n> wfr wait
+\end{lstlisting}
+natomiast dla scenariusza bez gwarancji WFR:
+\begin{lstlisting}
+? testkey pram wait
+= testkey v<n> wait
+\end{lstlisting}
+przy czym obowiązują podobne uwagi dotyczące stosowania parametru \texttt{wait}, jak w przypadku gwarancji Read Your Writes.
+
+\subsubsection*{Wyniki}
+
+% surowe wyniki do komentarza
+% 	avg
+% SET(-) 5C 500R 10S	3,95
+% SET(MW) 5C 5000R 10S	4,28
+% 5SET(LAST SET WAITS) 1GET(-) 5C 5000R 10S (averaging gets)	2,93
+% 5SET(LAST SET WAITS) 1GET(RYW) 5C 5000R 10S (averaging gets)	3,08
+% GET(-) 2C 5000R 13S (writer client MW)	3,58
+% GET(MR) 2C 5000R 13S (writer client MW)	3,69
+% 5GET(LAST GET WAITS) 1SET(-) 5C 5000R 10S (averaging sets only)	3,73
+% 5GET(LAST GET WAITS) 1SET(WFR) (averaging sets only)	3,75
+
+Tablica \ref{latencyresults} zawiera wyniki testu przeprowadzonego według powyższego opisu.
+
+\begin{table}[]
+\centering
+\caption{Wyniki testów czasu odpowiedzi dla żądań w zależności od ustawień gwarancji sesji}
+\label{latencyresults}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Scenariusz testowy                   & Wymaganie gwarancji sesji & Średni czas odpowiedzi (ms) \\ \midrule
+\multirow{2}{*}{Monotonic Writes}    & Nie                       & 3,95                        \\
+                                     & Tak                       & 4,28                        \\ \midrule
+\multirow{2}{*}{Read Your Writes}    & Nie                       & 2,93                        \\
+                                     & Tak                       & 3,08                        \\ \midrule
+\multirow{2}{*}{Monotonic Reads}     & Nie                       & 3,58                        \\
+                                     & Tak                       & 3,69                        \\ \midrule
+\multirow{2}{*}{Writes Follow Reads} & Nie                       & 3,73                        \\
+                                     & Tak                       & 3,75                        \\ \bottomrule
+\end{tabular}
+\end{table}
+
+Wielokrotne (10-krotne) powtórzenie testu dla każdego scenariusza i niewielkie w odniesieniu do ostatecznych wyników rozrzuty wartości próbek (tj. podobne lub mniejsze, niż różnica między wynikiem dla włączonej i wyłączonej gwarancji) pozwalają na uznanie rezultatu za zgodny z oczekiwaniami --- w warunkach obciążenia daje się zauważyć dodatkowy czas potrzebny w celu oczekiwania na pojawienie się na serwerze danych, których znaczniki czasowe będą spełniały zadane gwarancje. Jedynym niepasującym do tego obrazu elementem jest test dla gwarancji Writes Follow Reads, w którym rezultaty z włączoną i wyłączoną gwarancją WFR są podobne, a w scenariuszu z nieaktywną gwarancją notowano nieoczekiwanie większe odchylenia poszczególnych próbek; zapewne jednak przemyślana konstrukcja innego scenariusza testowego mogłaby potwierdzić wcześniejsze wnioski.
+
+Kierunki dalszego testowania systemu pod kątem efektywności działania mechanizmu gwarancji sesji mogłyby obejmować m.in. testy przy większej liczbie instancji wraz z przeprowadzeniem prób badających zależność czasu odpowiedzi od liczby serwerów, klientów i obciążenia systemu. Interesującym zagadnieniem testowym wydaje się także sprawdzenie efektywności w sytuacjach, gdy gwarancje sesji są używane parami (tj. MR+RYW dla odczytów, MW+WFR dla zapisów).
